@@ -1,0 +1,11 @@
+{
+  "name": "commerce-platform",
+  "private": true,
+  "workspaces": ["ecommerce-client", "ecommerce-api"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w ecommerce-client\" \"npm run dev -w ecommerce-api\"",
+    "build": "npm run build -w ecommerce-client && npm run build -w ecommerce-api",
+    "lint": "npm run lint -w ecommerce-client && npm run lint -w ecommerce-api"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}

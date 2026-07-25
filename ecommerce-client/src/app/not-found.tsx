@@ -1,0 +1,1 @@
+import Link from "next/link"; export default function NotFound(){return <main className="grid min-h-[70vh] place-items-center p-6 text-center"><div><p className="text-7xl font-black">404</p><h1 className="mt-3 text-2xl font-bold">This aisle is empty.</h1><Link className="mt-6 inline-block underline" href="/">Return home</Link></div></main>}

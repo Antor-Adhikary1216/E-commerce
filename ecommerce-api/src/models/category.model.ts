@@ -1,0 +1,1 @@
+import { Schema,model } from "mongoose"; const schema=new Schema({name:{type:String,required:true},slug:{type:String,required:true,unique:true,index:true},image:String,parent:{type:Schema.Types.ObjectId,ref:"Category",default:null,index:true}},{timestamps:true}); export const CategoryModel=model("Category",schema);

@@ -1,0 +1,1 @@
+import type { ErrorRequestHandler } from "express"; export const errorHandler:ErrorRequestHandler=(err,_,res,__)=>{console.error(err);const status=err.name==="ZodError"?422:err.statusCode??500;res.status(status).json({message:status===500?"Internal server error":err.message,issues:err.issues});};
