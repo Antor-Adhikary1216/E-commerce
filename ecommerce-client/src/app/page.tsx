@@ -1,6 +1,108 @@
-import Image from "next/image"; import Link from "next/link"; import { ChevronRight } from "lucide-react"; import { ProductCard } from "@/components/product-card"; import { demoProducts } from "@/constants/demo-products";
-const categories=[
- ["Mobiles","https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=160&q=80"],["Electronics","https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=160&q=80"],["Fashion","https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=160&q=80"],["Home & Furniture","https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=160&q=80"],["Appliances","https://images.unsplash.com/photo-1586208958839-06c17cacdf08?auto=format&fit=crop&w=160&q=80"],["Grocery","https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=160&q=80"],["Books & More","https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=160&q=80"],["Toys","https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&w=160&q=80"]
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { fetchCatalog, toCard } from "@/lib/catalog";
+
+const categories = [
+  ["Mobiles", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=160&q=80"],
+  ["Laptops", "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=160&q=80"],
+  ["Headphones", "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=160&q=80"],
+  ["Sneakers", "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=160&q=80"],
+  ["Furniture", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=160&q=80"],
+  ["Grocery", "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=160&q=80"],
+  ["Books", "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=160&q=80"],
+  ["Toys", "https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&w=160&q=80"],
 ];
-function ProductRow({title,subtitle,products=demoProducts}:{title:string;subtitle:string;products?:typeof demoProducts}){return <section className="rounded-2xl bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)]"><div className="flex items-center justify-between px-3 py-3"><div><h2 className="text-[18px] font-semibold">{title}</h2><p className="mt-1 text-xs text-slate-500">{subtitle}</p></div><Link className="rounded-full bg-[#16815d] px-5 py-2 text-xs font-semibold text-white" href="/shop">VIEW ALL</Link></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">{products.map(product=><ProductCard product={product} key={`${title}-${product.slug}`}/>)}</div></section>}
-export default function Home() { return <main className="mx-auto max-w-[1440px] space-y-5 py-5"><section className="mx-3 rounded-2xl bg-white px-3 py-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]"><div className="mx-auto grid max-w-[1240px] grid-cols-4 gap-3 sm:grid-cols-8">{categories.map(([name,image])=><Link href={`/shop?category=${encodeURIComponent(name)}`} key={name} className="group flex min-w-0 flex-col items-center gap-2 text-center"><div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-[#e5ead9]"><Image fill sizes="56px" src={image} alt="" className="object-cover"/></div><span className="line-clamp-2 text-xs font-semibold group-hover:text-[#16815d]">{name}</span></Link>)}</div></section><section className="mx-3 grid min-h-[310px] overflow-hidden rounded-2xl bg-[#d8ef72] text-[#1c2734] shadow-[0_1px_4px_rgba(0,0,0,.12)] md:grid-cols-[1fr_1.15fr]"><div className="flex flex-col justify-center px-7 py-8 md:px-14"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[#16815d]">Weekend market</p><h1 className="mt-3 text-4xl font-black leading-[.96] md:text-6xl">Good things. Better prices.</h1><p className="mt-4 max-w-md text-[13px] leading-6 text-[#1c2734]/75">A less ordinary way to shop for the things you use every day.</p><Link href="/sale" className="mt-7 inline-flex w-fit items-center gap-1 rounded-full bg-[#1c2734] px-5 py-3 text-xs font-semibold text-white">EXPLORE DEALS <ChevronRight size={15}/></Link></div><div className="relative min-h-[240px]"><Image priority src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=85" alt="Shopping offers" fill className="object-cover"/></div></section><div className="mx-3"><ProductRow title="Today’s best finds" subtitle="Limited-time prices on the things people love"/></div><section className="mx-3 grid gap-3 md:grid-cols-3"><div className="rounded-2xl bg-[#f3d8c4] p-7"><p className="text-xs font-semibold text-[#974d29]">Top offers</p><h2 className="mt-2 text-2xl font-bold">Tech, without the noise</h2><p className="mt-2 text-xs">Phones, laptops and audio worth taking home.</p><Link href="/shop?category=Electronics" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">EXPLORE NOW</Link></div><div className="rounded-2xl bg-[#d9e7f2] p-7"><p className="text-xs font-semibold text-[#316481]">Home refresh</p><h2 className="mt-2 text-2xl font-bold">Make space for easy</h2><p className="mt-2 text-xs">Furniture and appliances for every room.</p><Link href="/shop?category=Home" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">SHOP HOME</Link></div><div className="rounded-2xl bg-[#e9dff4] p-7"><p className="text-xs font-semibold text-[#704598]">Style picks</p><h2 className="mt-2 text-2xl font-bold">Wear what works</h2><p className="mt-2 text-xs">Everyday fashion with a point of view.</p><Link href="/shop?category=Fashion" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">SHOP FASHION</Link></div></section><div className="mx-3"><ProductRow title="For your short list" subtitle="Popular products, exceptional value" products={[...demoProducts].reverse()}/></div><footer className="bg-[#1c2734] px-6 py-10 text-xs text-white/75"><div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-7 md:grid-cols-4"><div><h2 className="mb-3 text-xs text-white/40">ABOUT</h2><Link href="/about" className="block text-white">Contact Us</Link><Link href="/about" className="mt-2 block text-white">About Us</Link></div><div><h2 className="mb-3 text-xs text-white/40">HELP</h2><Link href="/payments" className="block text-white">Payments</Link><Link href="/shipping" className="mt-2 block text-white">Shipping</Link></div><div><h2 className="mb-3 text-xs text-white/40">POLICY</h2><Link href="/returns" className="block text-white">Returns</Link><Link href="/privacy" className="mt-2 block text-white">Privacy</Link></div><div><h2 className="mb-3 text-xs text-white/40">SOCIAL</h2><p className="text-white">An everyday market, made better.</p></div></div></footer></main>; }
+
+function ProductRow({ title, subtitle, products }: { title: string; subtitle: string; products: ProductCardData[] }) {
+  return (
+    <section className="rounded-2xl bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+      <div className="flex items-center justify-between px-3 py-3">
+        <div>
+          <h2 className="text-[18px] font-semibold">{title}</h2>
+          <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+        </div>
+        <Link className="rounded-full bg-[#16815d] px-5 py-2 text-xs font-semibold text-white" href="/shop">
+          VIEW ALL
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        {products.map((product) => (
+          <ProductCard product={product} key={`${title}-${product.slug}`} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function Home() {
+  const { items } = await fetchCatalog({ limit: 6, sort: "rating" });
+  const products = items.map(toCard);
+
+  return (
+    <main className="mx-auto max-w-[1440px] space-y-5 py-5">
+      <section className="mx-3 rounded-2xl bg-white px-3 py-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+        <div className="mx-auto grid max-w-[1240px] grid-cols-4 gap-3 sm:grid-cols-8">
+          {categories.map(([name, image]) => (
+            <Link href={`/shop?category=${encodeURIComponent(name)}`} key={name} className="group flex min-w-0 flex-col items-center gap-2 text-center">
+              <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-[#e5ead9]">
+                <Image fill sizes="56px" src={image} alt="" className="object-cover" />
+              </div>
+              <span className="line-clamp-2 text-xs font-semibold group-hover:text-[#16815d]">{name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-3 grid min-h-[310px] overflow-hidden rounded-2xl bg-[#d8ef72] text-[#1c2734] shadow-[0_1px_4px_rgba(0,0,0,.12)] md:grid-cols-[1fr_1.15fr]">
+        <div className="flex flex-col justify-center px-7 py-8 md:px-14">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#16815d]">Weekend market</p>
+          <h1 className="mt-3 text-4xl font-black leading-[.96] md:text-6xl">Good things. Better prices.</h1>
+          <p className="mt-4 max-w-md text-[13px] leading-6 text-[#1c2734]/75">A less ordinary way to shop for the things you use every day.</p>
+          <Link href="/sale" className="mt-7 inline-flex w-fit items-center gap-1 rounded-full bg-[#1c2734] px-5 py-3 text-xs font-semibold text-white">
+            EXPLORE DEALS <ChevronRight size={15} />
+          </Link>
+        </div>
+        <div className="relative min-h-[240px]">
+          <Image priority src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=85" alt="Shopping offers" fill className="object-cover" />
+        </div>
+      </section>
+
+      <div className="mx-3">
+        <ProductRow title="Today’s best finds" subtitle="Limited-time prices on the things people love" products={products} />
+      </div>
+
+      <section className="mx-3 grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl bg-[#f3d8c4] p-7">
+          <p className="text-xs font-semibold text-[#974d29]">Top offers</p>
+          <h2 className="mt-2 text-2xl font-bold">Tech, without the noise</h2>
+          <p className="mt-2 text-xs">Phones, laptops and audio worth taking home.</p>
+          <Link href="/sale" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">
+            EXPLORE NOW
+          </Link>
+        </div>
+        <div className="rounded-2xl bg-[#d9e7f2] p-7">
+          <p className="text-xs font-semibold text-[#316481]">Home refresh</p>
+          <h2 className="mt-2 text-2xl font-bold">Make space for easy</h2>
+          <p className="mt-2 text-xs">Furniture and appliances for every room.</p>
+          <Link href="/shop?category=Furniture" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">
+            SHOP HOME
+          </Link>
+        </div>
+        <div className="rounded-2xl bg-[#e9dff4] p-7">
+          <p className="text-xs font-semibold text-[#7f4598]">Style picks</p>
+          <h2 className="mt-2 text-2xl font-bold">Wear what works</h2>
+          <p className="mt-2 text-xs">Everyday fashion with a point of view.</p>
+          <Link href="/shop?category=Sneakers" className="mt-6 inline-block text-xs font-semibold text-[#16815d]">
+            SHOP FASHION
+          </Link>
+        </div>
+      </section>
+
+      <div className="mx-3">
+        <ProductRow title="For your short list" subtitle="Popular products, exceptional value" products={[...products].reverse()} />
+      </div>
+    </main>
+  );
+}

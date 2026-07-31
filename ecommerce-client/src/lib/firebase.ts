@@ -1,1 +1,23 @@
-import { getApp,getApps,initializeApp } from "firebase/app"; import { getAuth } from "firebase/auth"; const config={apiKey:process.env.NEXT_PUBLIC_FIREBASE_API_KEY,authDomain:process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,projectId:process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,appId:process.env.NEXT_PUBLIC_FIREBASE_APP_ID}; export const firebaseApp=getApps().length?getApp():initializeApp(config); export const firebaseAuth=getAuth(firebaseApp);
+import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+
+const config = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+export const firebaseApp: FirebaseApp | null = config.apiKey && config.authDomain && config.projectId && config.appId
+  ? getApps().length
+    ? getApp()
+    : initializeApp(config)
+  : null;
+
+let firebaseAuthInstance: Auth | null = null;
+
+export function getFirebaseAuth(): Auth | null {
+  if (!firebaseApp) return null;
+  if (!firebaseAuthInstance) firebaseAuthInstance = getAuth(firebaseApp);
+  return firebaseAuthInstance;
+}
