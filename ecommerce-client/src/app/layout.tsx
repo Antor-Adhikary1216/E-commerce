@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProviders } from "@/providers/app-providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { LoginPrompt } from "@/components/login-prompt";
 
 const inter = Inter({ subsets: ["latin"], display: "optional", adjustFontFallback: true });
 
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SiteHeader />
           {children}
           <SiteFooter />
+          <LoginPrompt />
         </AppProviders>
       </body>
     </html>
