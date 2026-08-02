@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Heart, Star } from "lucide-react";
 import { currency } from "@/lib/utils";
 import { savedForLater } from "@/lib/swal";
 import { useWishlist } from "@/store/wishlist";
+import { useRequireAuth } from "@/lib/use-require-auth";
 
 export interface ProductCardData {
   name: string;
@@ -18,14 +20,20 @@ export interface ProductCardData {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const { isSaved, toggle } = useWishlist();
+  const requireAuth = useRequireAuth();
   const saved = isSaved(product.slug);
 
   function handleSaved() {
+    if (!requireAuth()) return;
     savedForLater(product.name, toggle(product));
   }
 
   return (
-    <article className="group relative rounded-xl bg-white p-3 transition duration-200 hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(28,39,52,.12)]">
+    <motion.article
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 320, damping: 20 }}
+      className="group relative rounded-xl bg-white p-3 shadow-[0_1px_4px_rgba(0,0,0,.04)] hover:shadow-[0_10px_28px_rgba(28,39,52,.12)]"
+    >
       <Link href={`/products/${product.slug}`}>
         <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f3f0e9]">
           <Image src={product.image} alt={product.name} fill sizes="(max-width:768px) 50vw, 25vw" className="object-contain p-3 transition duration-300 group-hover:scale-105" />
@@ -46,14 +54,17 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </div>
         </div>
       </Link>
-      <button
+      <motion.button
         type="button"
         onClick={handleSaved}
+        whileTap={{ scale: 0.75 }}
+        animate={saved ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+        transition={saved ? { duration: 0.35, ease: "easeOut" } : { duration: 0.2 }}
         aria-label={saved ? `Remove ${product.name} from saved` : `Save ${product.name} for later`}
         className={`absolute right-3 top-3 rounded-full bg-white p-2 shadow transition focus-visible:opacity-100 ${saved ? "opacity-100 text-[#16815d]" : "opacity-0 group-hover:opacity-100"}`}
       >
         <Heart size={16} fill={saved ? "currentColor" : "none"} />
-      </button>
-    </article>
+      </motion.button>
+    </motion.article>
   );
 }

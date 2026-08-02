@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/store/cart";
 import { currency } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -36,8 +37,17 @@ export default function CartPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-3">
-          {items.map((item) => (
-            <div key={item.product.slug} className="flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+          <AnimatePresence initial={false}>
+            {items.map((item) => (
+              <motion.div
+                key={item.product.slug}
+                layout
+                initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -24, scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                className="flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)]"
+              >
               <Link href={`/products/${item.product.slug}`} className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f3f0e9]">
                 <Image src={item.product.image} alt={item.product.name} fill sizes="96px" className="object-contain p-2" />
               </Link>
@@ -50,7 +60,7 @@ export default function CartPage() {
                     <button type="button" onClick={() => updateQuantity(item.product.slug, item.quantity - 1)} aria-label="Decrease quantity" className="p-2 text-slate-500 hover:text-[#1c2734]">
                       <Minus size={14} />
                     </button>
-                    <span className="w-8 text-center text-[13px] font-semibold">{item.quantity}</span>
+                    <motion.span key={item.quantity} initial={{ scale: 1.3 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 480, damping: 24 }} className="w-8 text-center text-[13px] font-semibold">{item.quantity}</motion.span>
                     <button type="button" onClick={() => updateQuantity(item.product.slug, item.quantity + 1)} aria-label="Increase quantity" className="p-2 text-slate-500 hover:text-[#1c2734]">
                       <Plus size={14} />
                     </button>
@@ -62,8 +72,9 @@ export default function CartPage() {
               <button type="button" onClick={() => remove(item.product.slug)} aria-label={`Remove ${item.product.name} from cart`} className="h-fit rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-[#16815d]">
                 <Trash2 size={16} />
               </button>
-            </div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         <aside className="h-fit rounded-2xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
@@ -79,7 +90,7 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between border-t border-slate-100 pt-2.5 text-sm">
               <dt className="font-bold">Total</dt>
-              <dd className="font-black">{currency(subtotal)}</dd>
+              <dd className="font-black"><motion.span key={subtotal} initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 420, damping: 24 }}>{currency(subtotal)}</motion.span></dd>
             </div>
           </dl>
           <button type="button" onClick={checkout} className="mt-5 w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02]">

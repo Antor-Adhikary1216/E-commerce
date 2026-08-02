@@ -64,7 +64,9 @@ export default function LoginPage() {
 
   function finish() {
     toast.success(mode === "signin" ? "Welcome back." : "Account created.");
-    router.replace("/account");
+    const target = new URLSearchParams(window.location.search).get("redirect");
+    const safeTarget = target && target.startsWith("/") && !target.startsWith("//") ? target : "/account";
+    router.replace(safeTarget);
   }
 
   async function submit(e: React.FormEvent) {

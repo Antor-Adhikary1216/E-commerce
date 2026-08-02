@@ -6,6 +6,7 @@ import { ChevronRight, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react"
 import { fetchProduct } from "@/lib/catalog";
 import { currency } from "@/lib/utils";
 import { ProductActions } from "@/components/product-actions";
+import { Reveal } from "@/components/motion/reveal";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -42,7 +43,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </nav>
 
       <div className="mt-4 grid gap-6 md:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-white shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+        <Reveal className="relative aspect-square overflow-hidden rounded-2xl bg-white shadow-[0_1px_4px_rgba(0,0,0,.12)]" y={24}>
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -51,9 +52,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             className="object-contain p-6"
             priority
           />
-        </div>
+        </Reveal>
 
-        <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] md:p-8">
+        <Reveal className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] md:p-8" delay={0.1}>
           {product.bestSeller && <span className="rounded-full bg-[#1c2734] px-2.5 py-1 text-[11px] font-semibold text-white">Best seller</span>}
           <h1 className="mt-3 text-2xl font-black leading-tight md:text-3xl">{product.name}</h1>
           <p className="mt-1 text-[13px] text-slate-500">{product.brand}</p>
@@ -107,7 +108,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <span className="flex items-center gap-1.5"><RotateCcw size={15} /> 7-day returns</span>
             <span className="flex items-center gap-1.5"><ShieldCheck size={15} /> Secure checkout</span>
           </div>
-        </div>
+        </Reveal>
       </div>
     </main>
   );

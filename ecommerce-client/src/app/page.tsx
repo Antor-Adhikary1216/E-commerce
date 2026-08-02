@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { ProductCard, type ProductCardData } from "@/components/product-card";
+import type { ProductCardData } from "@/components/product-card";
+import { ProductGrid } from "@/components/motion/product-grid";
+import { Reveal } from "@/components/motion/reveal";
 import { fetchCatalog, toCard } from "@/lib/catalog";
 
 const categories = [
@@ -27,11 +29,7 @@ function ProductRow({ title, subtitle, products }: { title: string; subtitle: st
           VIEW ALL
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        {products.map((product) => (
-          <ProductCard product={product} key={`${title}-${product.slug}`} />
-        ))}
-      </div>
+      <ProductGrid cards={products} className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" />
     </section>
   );
 }
@@ -42,7 +40,7 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-[1440px] space-y-5 py-5">
-      <section className="mx-3 rounded-2xl bg-white px-3 py-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+      <Reveal className="mx-3 rounded-2xl bg-white px-3 py-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
         <div className="mx-auto grid max-w-[1240px] grid-cols-4 gap-3 sm:grid-cols-8">
           {categories.map(([name, image]) => (
             <Link href={`/shop?category=${encodeURIComponent(name)}`} key={name} className="group flex min-w-0 flex-col items-center gap-2 text-center">
@@ -53,9 +51,9 @@ export default async function Home() {
             </Link>
           ))}
         </div>
-      </section>
+      </Reveal>
 
-      <section className="mx-3 grid min-h-[310px] overflow-hidden rounded-2xl bg-[#d8ef72] text-[#1c2734] shadow-[0_1px_4px_rgba(0,0,0,.12)] md:grid-cols-[1fr_1.15fr]">
+      <Reveal className="mx-3 grid min-h-[310px] overflow-hidden rounded-2xl bg-[#d8ef72] text-[#1c2734] shadow-[0_1px_4px_rgba(0,0,0,.12)] md:grid-cols-[1fr_1.15fr]">
         <div className="flex flex-col justify-center px-7 py-8 md:px-14">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#16815d]">Weekend market</p>
           <h1 className="mt-3 text-4xl font-black leading-[.96] md:text-6xl">Good things. Better prices.</h1>
@@ -67,13 +65,15 @@ export default async function Home() {
         <div className="relative min-h-[240px]">
           <Image priority src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=85" alt="Shopping offers" fill className="object-cover" />
         </div>
-      </section>
+      </Reveal>
 
       <div className="mx-3">
-        <ProductRow title="Today’s best finds" subtitle="Limited-time prices on the things people love" products={products} />
+        <Reveal>
+          <ProductRow title="Today’s best finds" subtitle="Limited-time prices on the things people love" products={products} />
+        </Reveal>
       </div>
 
-      <section className="mx-3 grid gap-3 md:grid-cols-3">
+      <Reveal className="mx-3 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl bg-[#f3d8c4] p-7">
           <p className="text-xs font-semibold text-[#974d29]">Top offers</p>
           <h2 className="mt-2 text-2xl font-bold">Tech, without the noise</h2>
@@ -98,10 +98,12 @@ export default async function Home() {
             SHOP FASHION
           </Link>
         </div>
-      </section>
+      </Reveal>
 
       <div className="mx-3">
-        <ProductRow title="For your short list" subtitle="Popular products, exceptional value" products={[...products].reverse()} />
+        <Reveal delay={0.1}>
+          <ProductRow title="For your short list" subtitle="Popular products, exceptional value" products={[...products].reverse()} />
+        </Reveal>
       </div>
     </main>
   );

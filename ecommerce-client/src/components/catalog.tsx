@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchCatalog, fetchCategories, productBadge, type CatalogQuery } from "@/lib/catalog";
-import { ProductCard, type ProductCardData } from "@/components/product-card";
+import type { ProductCardData } from "@/components/product-card";
+import { ProductGrid } from "@/components/motion/product-grid";
 import { EmptyState } from "@/components/empty-state";
 
 const sortOptions = [
@@ -100,11 +101,7 @@ export async function Catalog({ basePath, query, title, subtitle, emptyTitle = "
           action={{ href: basePath, label: "View all products" }}
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          {cards.map((product) => (
-            <ProductCard product={product} key={product.slug} />
-          ))}
-        </div>
+        <ProductGrid cards={cards} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" />
       )}
 
       {pagination.pages > 1 && (

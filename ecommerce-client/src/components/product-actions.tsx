@@ -5,19 +5,23 @@ import { toCard, type CatalogProduct } from "@/lib/catalog";
 import { addedToCart, savedForLater } from "@/lib/swal";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
+import { useRequireAuth } from "@/lib/use-require-auth";
 
 export function ProductActions({ product }: { product: CatalogProduct }) {
   const { items, add } = useCart();
   const { isSaved, toggle } = useWishlist();
+  const requireAuth = useRequireAuth();
   const saved = isSaved(product.slug);
   const inCart = items.some((item) => item.product.slug === product.slug);
 
   function handleAddToCart() {
+    if (!requireAuth()) return;
     add(toCard(product));
     addedToCart(product.name);
   }
 
   function handleSaved() {
+    if (!requireAuth()) return;
     savedForLater(product.name, toggle(toCard(product)));
   }
 
