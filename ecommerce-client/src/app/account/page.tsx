@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, Package, UserRound } from "lucide-react";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { apiClient } from "@/services/api-client";
 import { EmptyState } from "@/components/empty-state";
@@ -65,15 +65,15 @@ export default function AccountPage() {
           </div>
         </div>
         <p className="mt-6 border-t border-slate-100 pt-6 text-[13px] leading-6 text-slate-500">
-          Orders, address book and preferences are coming soon. For now you can browse the market.
+          Manage your orders, address book and personal details from this account.
         </p>
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link href="/account/orders" className="inline-flex items-center gap-1.5 rounded-full bg-[#16815d] px-5 py-2.5 text-xs font-semibold text-white">
+            <Package size={14} /> My orders
+          </Link>
           <button onClick={handleSignOut} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-5 py-2.5 text-xs font-semibold hover:bg-slate-50">
             <LogOut size={14} /> Sign out
           </button>
-          <Link href="/" className="inline-flex items-center rounded-full bg-[#16815d] px-5 py-2.5 text-xs font-semibold text-white">
-            Continue browsing
-          </Link>
         </div>
       </div>
     </main>

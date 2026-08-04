@@ -1,15 +1,27 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/store/cart";
 import { currency } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
+import { apiClient } from "@/services/api-client";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { swal } from "@/lib/swal";
 
 export default function CartPage() {
-  const { items, count, subtotal, updateQuantity, remove } = useCart();
+  const { items, count, subtotal, updateQuantity, remove, clear } = useCart();
+  const requireAuth = useRequireAuth();
+  const [checkingOut, setCheckingOut] = useState(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("canceled") === "1") {
+      toast.error("Payment was cancelled. Your cart is still here.");
+    }
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -22,13 +34,49 @@ export default function CartPage() {
     );
   }
 
-  function checkout() {
-    swal.fire({
-      icon: "info",
-      title: "Checkout is coming soon",
-      text: "Payments aren't wired up yet, but your cart is safe.",
-      confirmButtonText: "OK",
+  async function confirmRemove(slug: string, name: string) {
+    const result = await swal.fire({
+      icon: "warning",
+      title: "Remove item?",
+      text: `Remove "${name}" from your cart?`,
+      showCancelButton: true,
+      confirmButtonText: "Yes, remove",
+      cancelButtonText: "Cancel",
     });
+    if (result.isConfirmed) {
+      remove(slug);
+      toast.success("Item removed from cart");
+    }
+  }
+
+  async function confirmClearCart() {
+    const result = await swal.fire({
+      icon: "warning",
+      title: "Clear your cart?",
+      text: "All items will be removed. This cannot be undone.",
+      showCancelButton: true,
+      confirmButtonText: "Yes, clear cart",
+      cancelButtonText: "Cancel",
+    });
+    if (result.isConfirmed) {
+      clear();
+      toast.success("Cart cleared");
+    }
+  }
+
+  async function checkout() {
+    if (!requireAuth()) return;
+    setCheckingOut(true);
+    try {
+      const { data } = await apiClient.post("/payments/create-checkout", {
+        items: items.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
+      });
+      window.location.href = data.url as string;
+    } catch (error) {
+      toast.error("Could not start checkout. Please try again.");
+    } finally {
+      setCheckingOut(false);
+    }
   }
 
   return (
@@ -69,7 +117,7 @@ export default function CartPage() {
                   {item.product.finalPrice < item.product.price && <del className="text-xs text-slate-400">{currency(item.product.price * item.quantity)}</del>}
                 </div>
               </div>
-              <button type="button" onClick={() => remove(item.product.slug)} aria-label={`Remove ${item.product.name} from cart`} className="h-fit rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-[#16815d]">
+              <button type="button" onClick={() => confirmRemove(item.product.slug, item.product.name)} aria-label={`Remove ${item.product.name} from cart`} className="h-fit rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-[#16815d]">
                 <Trash2 size={16} />
               </button>
               </motion.div>
@@ -93,8 +141,11 @@ export default function CartPage() {
               <dd className="font-black"><motion.span key={subtotal} initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 420, damping: 24 }}>{currency(subtotal)}</motion.span></dd>
             </div>
           </dl>
-          <button type="button" onClick={checkout} className="mt-5 w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02]">
-            Proceed to checkout
+          <button type="button" onClick={checkout} disabled={checkingOut} className="mt-5 w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02] disabled:opacity-60">
+            {checkingOut ? "Redirecting to Stripe…" : "Proceed to checkout"}
+          </button>
+          <button type="button" onClick={confirmClearCart} className="mt-2.5 w-full rounded-full border border-slate-200 px-5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-[#c0392b]">
+            Clear cart
           </button>
           <Link href="/shop" className="mt-3 block text-center text-[13px] font-semibold text-[#16815d] hover:underline">
             Continue shopping
