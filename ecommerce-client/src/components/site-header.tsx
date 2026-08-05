@@ -154,17 +154,16 @@ export function SiteHeader() {
 
                       <div className="border-t border-slate-100">
                         <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Popular</div>
-                        <div className="flex flex-wrap gap-2 px-4 pb-3 pt-1">
-                          {popular.map((q) => (
-                            <button
-                              key={q}
-                              onMouseDown={(e) => { e.preventDefault(); pick(q); }}
-                              className="rounded-full bg-[#f0efe9] px-3 py-1.5 text-[12px] font-medium text-[#1c2734] hover:bg-[#e5ead9] transition"
-                            >
-                              {q}
-                            </button>
-                          ))}
-                        </div>
+                        {popular.map((q) => (
+                          <button
+                            key={q}
+                            onMouseDown={(e) => { e.preventDefault(); pick(q); }}
+                            className="flex w-full items-center gap-3 px-4 py-2.5 text-[13px] hover:bg-[#f0efe9] transition"
+                          >
+                            <Search size={14} className="shrink-0 text-slate-400" />
+                            <span className="text-left">{q}</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}
