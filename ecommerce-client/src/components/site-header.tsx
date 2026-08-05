@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Menu, Search, ShoppingCart, UserRound, Clock, X } from "lucide-react";
@@ -24,8 +25,11 @@ export function SiteHeader() {
   const { history, add, remove, clear } = useSearchHistory();
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const suggestions = searchQuery.trim()
     ? history.filter((h) => h.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -106,7 +110,6 @@ export function SiteHeader() {
                   className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl bg-white text-[#1c2734] shadow-[0_8px_30px_rgba(0,0,0,.18)]"
                 >
                   {searchQuery.trim() ? (
-                    /* Suggestions from history matching input */
                     <div>
                       <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Suggestions</div>
                       {suggestions.map((q) => (
@@ -128,7 +131,6 @@ export function SiteHeader() {
                       </button>
                     </div>
                   ) : (
-                    /* History + popular when empty */
                     <div>
                       {history.length > 0 && (
                         <div>
@@ -240,19 +242,23 @@ export function SiteHeader() {
         </ul>
       </nav>
 
-      {/* Full-screen water blur backdrop when search is open */}
-      <AnimatePresence>
-        {showDropdown && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 backdrop-blur-md bg-black/20"
-            onClick={() => setDropdownOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Backdrop rendered via portal at body level — blurs page, leaves header/search clear */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {showDropdown && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm"
+              onClick={() => setDropdownOpen(false)}
+              style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </header>
   );
 }
