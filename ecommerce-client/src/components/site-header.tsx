@@ -11,8 +11,6 @@ import { useSearchHistory } from "@/lib/use-search-history";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/logo";
 
-const nav = ["Mobiles", "Laptops", "Headphones", "Earbuds", "Sneakers", "Skincare", "Kitchen Appliances", "Furniture", "Sports", "Books", "Toys", "Grocery"];
-
 const popular = ["iPhone", "Samsung", "Headphones", "Sneakers", "Watch", "Backpack"];
 
 export function SiteHeader() {
@@ -229,18 +227,6 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
-
-      <nav aria-label="Primary categories" className="hidden border-b bg-[#f7f4ee]/80 backdrop-blur-xl md:block">
-        <ul className="mx-auto flex h-12 max-w-[1360px] items-center justify-center gap-3 overflow-x-auto px-4">
-          {nav.map((item) => (
-            <li key={item} className="shrink-0">
-              <Link href={`/shop?category=${encodeURIComponent(item)}`} className="whitespace-nowrap rounded-full px-3.5 py-2 text-[14px] font-medium hover:bg-[#e5ead9] hover:text-[#16815d]">
-                {item}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
 
       {/* Backdrop rendered via portal at body level — blurs page, leaves header/search clear */}
       {mounted && createPortal(
