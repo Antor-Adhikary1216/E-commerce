@@ -69,8 +69,14 @@ export function SiteHeader() {
             )}
 
             {signedIn && (
-              <Link href="/account" aria-label="My account" className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
-                <UserRound size={19} />
+              <Link href="/account" aria-label="My account" className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full transition hover:ring-2 hover:ring-white/20">
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="" className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d8ef72] text-[#1c2734]">
+                    <UserRound size={19} />
+                  </div>
+                )}
               </Link>
             )}
 

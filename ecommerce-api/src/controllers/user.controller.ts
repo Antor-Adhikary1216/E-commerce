@@ -16,12 +16,13 @@ export async function getProfile(req: AuthRequest, res: Response) {
 
 export async function updateProfile(req: AuthRequest, res: Response) {
   try {
-    const { name, phone, gender, dateOfBirth } = req.body;
+    const { name, phone, gender, dateOfBirth, avatar } = req.body;
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
     if (phone !== undefined) updates.phone = phone;
     if (gender !== undefined) updates.gender = gender;
     if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
+    if (avatar !== undefined) updates.avatar = avatar || null;
 
     const user = await UserModel.findByIdAndUpdate(req.auth!.userId, { $set: updates }, { new: true }).select(
       "name email avatar phone gender dateOfBirth addresses"

@@ -50,7 +50,7 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({ name: "", phone: "", gender: "", dateOfBirth: "" });
+  const [profileForm, setProfileForm] = useState({ name: "", phone: "", gender: "", dateOfBirth: "", avatar: "" });
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
@@ -104,6 +104,7 @@ export default function AccountPage() {
       phone: profile.phone ?? "",
       gender: profile.gender ?? "",
       dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.split("T")[0] : "",
+      avatar: profile.avatar ?? "",
     });
     setEditingProfile(true);
   }
@@ -199,6 +200,21 @@ export default function AccountPage() {
 
           {editingProfile ? (
             <div className="mt-5 space-y-4">
+              <div className="flex items-center gap-4">
+                {profileForm.avatar ? (
+                  <img src={profileForm.avatar} alt="" className="h-16 w-16 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e5ead9] text-[#16815d]">
+                    <UserRound size={28} />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Photo URL</span>
+                    <input type="url" value={profileForm.avatar} onChange={(e) => setProfileForm((f) => ({ ...f, avatar: e.target.value }))} placeholder="https://example.com/photo.jpg" className={inputClass} />
+                  </label>
+                </div>
+              </div>
               <label className="block">
                 <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Full name</span>
                 <input type="text" value={profileForm.name} onChange={(e) => setProfileForm((f) => ({ ...f, name: e.target.value }))} placeholder="Your name" className={inputClass} />
@@ -234,8 +250,8 @@ export default function AccountPage() {
           ) : (
             <div className="mt-5 space-y-3 text-[13px]">
               <div className="flex items-center gap-3">
-                {firebaseUser.photoURL ? (
-                  <img src={firebaseUser.photoURL} alt="" className="h-14 w-14 rounded-full" />
+                {profile?.avatar || firebaseUser.photoURL ? (
+                  <img src={profile?.avatar || firebaseUser.photoURL || ""} alt="" className="h-14 w-14 rounded-full object-cover" />
                 ) : (
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e5ead9] text-[#16815d]">
                     <UserRound size={24} />
