@@ -35,7 +35,7 @@ router.put(
         phone: z.string().optional(),
         gender: z.enum(["male", "female", "other"]).optional(),
         dateOfBirth: z.string().optional(),
-        avatar: z.string().url().optional().or(z.literal("")),
+        avatar: z.string().optional().or(z.literal("")),
       }).parse(req.body);
       next();
     } catch (e) {
