@@ -21,7 +21,7 @@ app.use(helmet());
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(rateLimit({ windowMs: 15 * 60_000, limit: 300, standardHeaders: "draft-8", legacyHeaders: false }));
 app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }), handleWebhook);
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "3mb" }));
 app.use(cookieParser());
 app.use((req, _, next) => {
   if (req.body && !Buffer.isBuffer(req.body)) req.body = mongoSanitize(req.body);
