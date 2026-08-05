@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, ShoppingCart, Zap } from "lucide-react";
 import { currency } from "@/lib/utils";
 import { savedForLater } from "@/lib/swal";
+import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
@@ -19,13 +21,28 @@ export interface ProductCardData {
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
+  const { add } = useCart();
   const { isSaved, toggle } = useWishlist();
   const requireAuth = useRequireAuth();
+  const router = useRouter();
   const saved = isSaved(product.slug);
 
   function handleSaved() {
     if (!requireAuth()) return;
     savedForLater(product.name, toggle(product));
+  }
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!requireAuth()) return;
+    add(product);
+  }
+
+  function handleBuyNow(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!requireAuth()) return;
+    add(product);
+    router.push("/cart");
   }
 
   return (
@@ -54,6 +71,23 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </div>
         </div>
       </Link>
+
+      {/* Action buttons */}
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={handleAddToCart}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#16815d] bg-white px-3 py-2 text-[11px] font-semibold text-[#16815d] transition hover:bg-[#e5ead9]"
+        >
+          <ShoppingCart size={12} /> Add to Cart
+        </button>
+        <button
+          onClick={handleBuyNow}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#16815d] px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-[#147a56]"
+        >
+          <Zap size={12} /> Buy Now
+        </button>
+      </div>
+
       <motion.button
         type="button"
         onClick={handleSaved}
