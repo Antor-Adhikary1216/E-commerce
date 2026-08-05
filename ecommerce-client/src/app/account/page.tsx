@@ -97,8 +97,24 @@ export default function AccountPage() {
     window.location.href = "/";
   }
 
-  function startEditProfile() {
-    if (!profile) return;
+  async function startEditProfile() {
+    if (!profile) {
+      try {
+        const { data } = await apiClient.get("/user/profile");
+        setProfile(data.user);
+        setProfileForm({
+          name: data.user.name ?? "",
+          phone: data.user.phone ?? "",
+          gender: data.user.gender ?? "",
+          dateOfBirth: data.user.dateOfBirth ? data.user.dateOfBirth.split("T")[0] : "",
+          avatar: data.user.avatar ?? "",
+        });
+        setEditingProfile(true);
+      } catch {
+        // ignore
+      }
+      return;
+    }
     setProfileForm({
       name: profile.name ?? "",
       phone: profile.phone ?? "",
