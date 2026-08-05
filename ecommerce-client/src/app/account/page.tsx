@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { LogOut, Package, UserRound, MapPin, Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { LogOut, Package, UserRound, MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { apiClient } from "@/services/api-client";
 import { EmptyState } from "@/components/empty-state";
@@ -97,30 +97,13 @@ export default function AccountPage() {
     window.location.href = "/";
   }
 
-  async function startEditProfile() {
-    if (!profile) {
-      try {
-        const { data } = await apiClient.get("/user/profile");
-        setProfile(data.user);
-        setProfileForm({
-          name: data.user.name ?? "",
-          phone: data.user.phone ?? "",
-          gender: data.user.gender ?? "",
-          dateOfBirth: data.user.dateOfBirth ? data.user.dateOfBirth.split("T")[0] : "",
-          avatar: data.user.avatar ?? "",
-        });
-        setEditingProfile(true);
-      } catch {
-        // ignore
-      }
-      return;
-    }
+  function startEditProfile() {
     setProfileForm({
-      name: profile.name ?? "",
-      phone: profile.phone ?? "",
-      gender: profile.gender ?? "",
-      dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.split("T")[0] : "",
-      avatar: profile.avatar ?? "",
+      name: profile?.name ?? "",
+      phone: profile?.phone ?? "",
+      gender: profile?.gender ?? "",
+      dateOfBirth: profile?.dateOfBirth ? profile.dateOfBirth.split("T")[0] : "",
+      avatar: profile?.avatar ?? "",
     });
     setEditingProfile(true);
   }
