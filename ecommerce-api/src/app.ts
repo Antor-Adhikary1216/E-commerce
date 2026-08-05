@@ -10,6 +10,7 @@ import categoryRoutes from "./routes/category.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { handleWebhook } from "./controllers/payment.controller.js";
 import { errorHandler } from "./middleware/error.js";
 
@@ -35,5 +36,6 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/user", userRoutes);
 app.use("/api/v1", (_, res) => res.status(404).json({ message: "Not found" }));
 app.use(errorHandler);
