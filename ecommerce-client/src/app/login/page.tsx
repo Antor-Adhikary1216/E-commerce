@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile, type Auth } from "firebase/auth";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Heart, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { setAccessToken } from "@/lib/token";
@@ -53,6 +54,7 @@ export default function LoginPage() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [otpStep, setOtpStep] = useState(false);
   const [otp, setOtp] = useState("");
@@ -337,16 +339,27 @@ export default function LoginPage() {
                     </label>
                     <label className="block">
                       <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Password</span>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="At least 6 characters"
-                        className={inputClass}
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required
+                          minLength={6}
+                          autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="At least 6 characters"
+                          className={inputClass + " pr-11"}
+                        />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          onClick={() => setShowPassword((s) => !s)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                        </button>
+                      </div>
                     </label>
                     <button
                       type="submit"
