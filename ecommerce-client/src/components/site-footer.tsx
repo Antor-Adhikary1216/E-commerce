@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { NewsletterForm } from "@/components/newsletter-form";
+import { Logo } from "@/components/logo";
 
 const shopLinks = [
   { label: "Mobiles", href: "/shop?category=Mobiles" },
@@ -70,10 +71,10 @@ export function SiteFooter() {
 
       <div className="mx-auto grid max-w-[1360px] gap-10 px-6 py-14 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
-          <Link href="/" className="text-2xl font-black tracking-tight">
-            VANTA<span className="text-[#d8ef72]">/</span>
+          <Link href="/" className="inline-block">
+            <Logo className="h-10 w-auto" />
           </Link>
-          <p className="mt-3 max-w-xs text-[13px] leading-6 text-white/60">A considered destination for everyday essentials — good things, better prices.</p>
+          <p className="mt-3 max-w-xs text-[13px] leading-6 text-white/60">Your one-stop online marketplace for everyday essentials across India — great products, better prices.</p>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[.18em] text-white/40">Get the good stuff first</p>
           <div className="mt-3 max-w-sm">
             <NewsletterForm />
@@ -86,7 +87,7 @@ export function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-white/50 md:flex-row">
-          <p>© {year} Vanta Commerce. All rights reserved.</p>
+          <p>&copy; {year} Shopping India. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
             <Link href="/returns" className="transition hover:text-white">Returns</Link>

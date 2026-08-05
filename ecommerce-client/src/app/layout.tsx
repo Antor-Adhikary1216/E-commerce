@@ -9,10 +9,10 @@ import { LoginPrompt } from "@/components/login-prompt";
 const inter = Inter({ subsets: ["latin"], display: "optional", adjustFontFallback: true });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://vanta.example"),
-  title: { default: "Vanta — Curated essentials", template: "%s | Vanta" },
-  description: "A considered destination for everyday essentials.",
-  openGraph: { type: "website", title: "Vanta — Curated essentials", description: "A considered destination for everyday essentials." },
+  metadataBase: new URL("https://shoppingindia.example"),
+  title: { default: "Shopping India — Your Online Marketplace", template: "%s | Shopping India" },
+  description: "Your one-stop online marketplace for everyday essentials across India.",
+  openGraph: { type: "website", title: "Shopping India — Your Online Marketplace", description: "Your one-stop online marketplace for everyday essentials across India." },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

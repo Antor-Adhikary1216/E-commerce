@@ -5,6 +5,7 @@ import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
 import { useAuthUser } from "@/lib/use-auth-user";
 import { motion } from "framer-motion";
+import { Logo } from "@/components/logo";
 
 const nav = ["Mobiles", "Laptops", "Headphones", "Earbuds", "Sneakers", "Skincare", "Kitchen Appliances", "Furniture", "Sports", "Books", "Toys", "Grocery"];
 
@@ -22,9 +23,8 @@ export function SiteHeader() {
             <Menu size={21} />
           </button>
 
-          <Link href="/" className="shrink-0 text-xl font-black tracking-tight">
-            VANTA<span className="text-[#d8ef72]">/</span>
-            <span className="block text-[9px] font-medium uppercase tracking-[.18em] text-white/55">Everyday market</span>
+          <Link href="/" className="shrink-0">
+            <Logo className="h-10 w-auto" />
           </Link>
 
           <label className="relative hidden flex-1 md:block">
