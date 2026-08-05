@@ -18,6 +18,10 @@ export default function CartPage() {
   const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
+    requireAuth();
+  }, []);
+
+  useEffect(() => {
     if (new URLSearchParams(window.location.search).get("canceled") === "1") {
       toast.error("Payment was cancelled. Your cart is still here.");
     }

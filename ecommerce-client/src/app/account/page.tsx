@@ -32,6 +32,10 @@ export default function AccountPage() {
     } catch {
       // session already cleared client-side
     }
+    localStorage.removeItem("vanta.cart");
+    localStorage.removeItem("vanta.saved");
+    localStorage.removeItem("vanta.access-token");
+    window.location.href = "/";
   }
 
   if (loading) return null;

@@ -13,7 +13,6 @@ export function SiteHeader() {
   const { count: savedCount } = useWishlist();
   const user = useAuthUser();
   const signedIn = Boolean(user);
-  const accountHref = signedIn ? "/account" : "/login";
 
   return (
     <header className="sticky top-0 z-50">
@@ -35,39 +34,51 @@ export function SiteHeader() {
           </label>
 
           <div className="ml-auto flex items-center gap-1.5">
-            <Link href={signedIn ? "/wishlist" : "/login"} aria-label="Saved items" className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
-              <Heart size={19} />
-              {savedCount > 0 && (
-                <motion.span
-                  key={savedCount}
-                  initial={{ scale: 0.4 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 520, damping: 20 }}
-                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d8ef72] px-1 text-[10px] font-bold text-[#1c2734]"
-                >
-                  {savedCount}
-                </motion.span>
-              )}
-            </Link>
+            {signedIn && (
+              <Link href="/wishlist" aria-label="Saved items" className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
+                <Heart size={19} />
+                {savedCount > 0 && (
+                  <motion.span
+                    key={savedCount}
+                    initial={{ scale: 0.4 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 520, damping: 20 }}
+                    className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d8ef72] px-1 text-[10px] font-bold text-[#1c2734]"
+                  >
+                    {savedCount}
+                  </motion.span>
+                )}
+              </Link>
+            )}
 
-            <Link href={signedIn ? "/cart" : "/login"} aria-label="Cart" className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
-              <ShoppingCart size={19} />
-              {cartCount > 0 && (
-                <motion.span
-                  key={cartCount}
-                  initial={{ scale: 0.4 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 520, damping: 20 }}
-                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d8ef72] px-1 text-[10px] font-bold text-[#1c2734]"
-                >
-                  {cartCount}
-                </motion.span>
-              )}
-            </Link>
+            {signedIn && (
+              <Link href="/cart" aria-label="Cart" className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
+                <ShoppingCart size={19} />
+                {cartCount > 0 && (
+                  <motion.span
+                    key={cartCount}
+                    initial={{ scale: 0.4 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 520, damping: 20 }}
+                    className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d8ef72] px-1 text-[10px] font-bold text-[#1c2734]"
+                  >
+                    {cartCount}
+                  </motion.span>
+                )}
+              </Link>
+            )}
 
-            <Link href={accountHref} aria-label="My account" className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
-              <UserRound size={19} />
-            </Link>
+            {signedIn && (
+              <Link href="/account" aria-label="My account" className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10">
+                <UserRound size={19} />
+              </Link>
+            )}
+
+            {!signedIn && (
+              <Link href="/login" className="rounded-full bg-[#d8ef72] px-4 py-2 text-xs font-semibold text-[#1c2734] transition hover:scale-105">
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </div>

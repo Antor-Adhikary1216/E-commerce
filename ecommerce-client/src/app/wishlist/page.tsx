@@ -1,11 +1,18 @@
 "use client";
+import { useEffect } from "react";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/store/wishlist";
 import { ProductGrid } from "@/components/motion/product-grid";
 import { EmptyState } from "@/components/empty-state";
+import { useRequireAuth } from "@/lib/use-require-auth";
 
 export default function WishlistPage() {
   const { items, count } = useWishlist();
+  const requireAuth = useRequireAuth();
+
+  useEffect(() => {
+    requireAuth();
+  }, []);
 
   if (items.length === 0) {
     return (
