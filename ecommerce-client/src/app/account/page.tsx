@@ -52,6 +52,7 @@ export default function AccountPage() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({ name: "", phone: "", gender: "", dateOfBirth: "", avatar: "" });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState("");
 
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
   const [addingAddress, setAddingAddress] = useState(false);
@@ -98,6 +99,7 @@ export default function AccountPage() {
   }
 
   function startEditProfile() {
+    setProfileError("");
     setProfileForm({
       name: profile?.name ?? "",
       phone: profile?.phone ?? "",
@@ -110,12 +112,20 @@ export default function AccountPage() {
 
   async function saveProfile() {
     setSavingProfile(true);
+    setProfileError("");
     try {
-      await apiClient.put("/user/profile", profileForm);
+      const payload: Record<string, string> = {};
+      if (profileForm.name) payload.name = profileForm.name;
+      if (profileForm.phone) payload.phone = profileForm.phone;
+      if (profileForm.gender) payload.gender = profileForm.gender;
+      if (profileForm.dateOfBirth) payload.dateOfBirth = profileForm.dateOfBirth;
+      if (profileForm.avatar) payload.avatar = profileForm.avatar;
+      await apiClient.put("/user/profile", payload);
       await fetchProfile();
       setEditingProfile(false);
-    } catch {
-      // ignore
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save profile";
+      setProfileError(msg);
     } finally {
       setSavingProfile(false);
     }
@@ -252,6 +262,7 @@ export default function AccountPage() {
                   <input type="date" value={profileForm.dateOfBirth} onChange={(e) => setProfileForm((f) => ({ ...f, dateOfBirth: e.target.value }))} className={inputClass + " text-slate-500"} />
                 </label>
               </div>
+              {profileError && <p className="text-[12px] text-red-500">{profileError}</p>}
               <div className="flex items-center gap-3">
                 <button onClick={saveProfile} disabled={savingProfile} className="inline-flex items-center gap-1.5 rounded-full bg-[#16815d] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#147a56] disabled:opacity-50">
                   <Check size={14} /> {savingProfile ? "Saving..." : "Save changes"}

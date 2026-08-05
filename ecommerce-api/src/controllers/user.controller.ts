@@ -18,9 +18,9 @@ export async function updateProfile(req: AuthRequest, res: Response) {
   try {
     const { name, phone, gender, dateOfBirth, avatar } = req.body;
     const updates: Record<string, unknown> = {};
-    if (name !== undefined) updates.name = name;
-    if (phone !== undefined) updates.phone = phone;
-    if (gender !== undefined) updates.gender = gender;
+    if (name !== undefined) updates.name = name || null;
+    if (phone !== undefined) updates.phone = phone || null;
+    if (gender !== undefined) updates.gender = gender || null;
     if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
     if (avatar !== undefined) updates.avatar = avatar || null;
 

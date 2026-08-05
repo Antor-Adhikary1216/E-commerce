@@ -31,9 +31,9 @@ router.put(
   (req, res, next) => {
     try {
       z.object({
-        name: z.string().min(1).optional(),
+        name: z.string().optional(),
         phone: z.string().optional(),
-        gender: z.enum(["male", "female", "other"]).optional(),
+        gender: z.enum(["male", "female", "other"]).or(z.literal("")).optional(),
         dateOfBirth: z.string().optional(),
         avatar: z.string().optional().or(z.literal("")),
       }).parse(req.body);
