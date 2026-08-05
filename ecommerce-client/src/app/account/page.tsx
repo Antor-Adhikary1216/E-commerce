@@ -121,6 +121,18 @@ export default function AccountPage() {
     }
   }
 
+  function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image must be under 2 MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setProfileForm((f) => ({ ...f, avatar: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
   function startAddAddress() {
     setAddressForm(emptyAddress);
     setAddingAddress(true);
@@ -209,8 +221,11 @@ export default function AccountPage() {
                 )}
                 <div className="flex-1">
                   <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Photo URL</span>
-                    <input type="url" value={profileForm.avatar} onChange={(e) => setProfileForm((f) => ({ ...f, avatar: e.target.value }))} placeholder="https://example.com/photo.jpg" className={inputClass} />
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Profile photo</span>
+                    <input type="file" accept="image/*" onChange={handleAvatarFile} className="block w-full text-[13px] text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-[#e5ead9] file:px-4 file:py-2 file:text-[12px] file:font-semibold file:text-[#16815d] hover:file:bg-[#d8e4cd]" />
+                    {profileForm.avatar && (
+                      <button type="button" onClick={() => setProfileForm((f) => ({ ...f, avatar: "" }))} className="mt-1.5 text-[11px] text-red-500 hover:underline">Remove photo</button>
+                    )}
                   </label>
                 </div>
               </div>
