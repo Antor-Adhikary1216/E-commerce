@@ -239,6 +239,20 @@ export function SiteHeader() {
           ))}
         </ul>
       </nav>
+
+      {/* Full-screen water blur backdrop when search is open */}
+      <AnimatePresence>
+        {showDropdown && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 backdrop-blur-md bg-black/20"
+            onClick={() => setDropdownOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </header>
   );
 }
