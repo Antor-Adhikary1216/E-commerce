@@ -1,5 +1,7 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Menu, Search, ShoppingCart, UserRound } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
@@ -14,6 +16,14 @@ export function SiteHeader() {
   const { count: savedCount } = useWishlist();
   const user = useAuthUser();
   const signedIn = Boolean(user);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) router.push(`/search?q=${encodeURIComponent(q)}`);
+  }
 
   return (
     <header className="sticky top-0 z-50">
@@ -27,11 +37,19 @@ export function SiteHeader() {
             <Logo className="h-11 w-auto" />
           </Link>
 
-          <label className="relative hidden flex-1 md:block">
+          <form onSubmit={handleSearch} className="relative hidden flex-1 md:block">
             <span className="sr-only">Search products</span>
-            <input className="h-11 w-full rounded-full bg-white/10 px-5 pr-11 text-[14px] text-white placeholder:text-white/60" placeholder="Search products, brands and categories" />
-            <Search className="absolute right-4 top-3 text-[#d8ef72]" size={20} />
-          </label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-11 w-full rounded-full bg-white/10 px-5 pr-11 text-[14px] text-white placeholder:text-white/60"
+              placeholder="Search products, brands and categories"
+            />
+            <button type="submit" aria-label="Search" className="absolute right-3 top-3 text-[#d8ef72]">
+              <Search size={20} />
+            </button>
+          </form>
 
           <div className="ml-auto flex items-center gap-2">
             {signedIn && (
