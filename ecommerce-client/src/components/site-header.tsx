@@ -89,7 +89,6 @@ export function SiteHeader() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setDropdownOpen(true)}
-                onMouseEnter={() => setDropdownOpen(true)}
                 className="h-11 w-full rounded-full bg-white/10 px-5 pr-11 text-[14px] text-white placeholder:text-white/60"
                 placeholder="Search products, brands and categories"
               />

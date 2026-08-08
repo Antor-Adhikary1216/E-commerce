@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 
 export function NewsletterForm() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -11,8 +13,12 @@ export function NewsletterForm() {
       toast.error("Please enter a valid email address.");
       return;
     }
-    toast.success("Thanks for subscribing!");
-    setEmail("");
+    setLoading(true);
+    setTimeout(() => {
+      toast.success("Thanks for subscribing!");
+      setEmail("");
+      setLoading(false);
+    }, 600);
   }
 
   return (
@@ -24,11 +30,12 @@ export function NewsletterForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email address"
         aria-label="Email address"
-        className="h-11 w-full min-w-0 flex-1 rounded-full bg-white/10 px-5 text-[13px] text-white placeholder:text-white/50"
+        disabled={loading}
+        className="h-11 w-full min-w-0 flex-1 rounded-full bg-white/10 px-5 text-[13px] text-white placeholder:text-white/50 disabled:opacity-50"
       />
-      <button type="submit" className="h-11 shrink-0 rounded-full bg-[#d8ef72] px-5 text-xs font-bold text-[#1c2734] transition hover:bg-[#cfe563]">
+      <Button type="submit" loading={loading} className="h-11 shrink-0 rounded-full bg-[#d8ef72] px-5 text-xs font-bold text-[#1c2734] hover:bg-[#cfe563]">
         SUBSCRIBE
-      </button>
+      </Button>
     </form>
   );
 }

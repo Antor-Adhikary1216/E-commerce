@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+"use client";
 import { Search, Package, CreditCard, RotateCcw, User, Truck, Wrench, Mail, Phone, MessageCircle } from "lucide-react";
 import { TopicCard } from "@/components/support/topic-card";
 import { FaqAccordion, type FaqItem } from "@/components/support/faq-accordion";
 import { ContactCard } from "@/components/support/contact-card";
-
-export const metadata: Metadata = {
-  title: "Help Center",
-  description: "Get help with orders, payments, returns, and more. Browse FAQs or contact our support team.",
-};
+import { AuthRequired } from "@/components/auth-required";
 
 const topics = [
   { icon: Package, title: "Orders & Tracking", description: "Track your order, view order history, or report an issue.", href: "#orders" },
@@ -54,47 +50,49 @@ const productFaq: FaqItem[] = [
 
 export default function SupportPage() {
   return (
-    <main className="mx-auto max-w-[1080px] px-4 py-8">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-[#1c2734]">Help Center</h1>
-        <p className="mt-2 text-sm text-slate-500">How can we help you today?</p>
+    <AuthRequired>
+      <main className="mx-auto max-w-[1080px] px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#1c2734]">Help Center</h1>
+          <p className="mt-2 text-sm text-slate-500">How can we help you today?</p>
 
-        <div className="mx-auto mt-6 flex max-w-lg items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-          <Search size={18} className="shrink-0 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search for help..."
-            className="w-full bg-transparent text-sm text-[#1c2734] outline-none placeholder:text-slate-400"
-          />
+          <div className="mx-auto mt-6 flex max-w-lg items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+            <Search size={18} className="shrink-0 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search for help..."
+              className="w-full bg-transparent text-sm text-[#1c2734] outline-none placeholder:text-slate-400"
+            />
+          </div>
         </div>
-      </div>
 
-      <section className="mt-10">
-        <h2 className="mb-4 text-base font-semibold text-[#1c2734]">Browse Topics</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((t) => (
-            <TopicCard key={t.title} {...t} />
-          ))}
-        </div>
-      </section>
+        <section className="mt-10">
+          <h2 className="mb-4 text-base font-semibold text-[#1c2734]">Browse Topics</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {topics.map((t) => (
+              <TopicCard key={t.title} {...t} />
+            ))}
+          </div>
+        </section>
 
-      <section className="mt-12 space-y-8">
-        <div id="orders"><FaqAccordion title="Orders & Tracking" items={ordersFaq} /></div>
-        <div id="payments"><FaqAccordion title="Payments & Refunds" items={paymentsFaq} /></div>
-        <div id="returns"><FaqAccordion title="Returns & Cancellations" items={returnsFaq} /></div>
-        <div id="account"><FaqAccordion title="Account & Profile" items={accountFaq} /></div>
-        <div id="delivery"><FaqAccordion title="Delivery" items={deliveryFaq} /></div>
-        <div id="product"><FaqAccordion title="Product Issues" items={productFaq} /></div>
-      </section>
+        <section className="mt-12 space-y-8">
+          <div id="orders"><FaqAccordion title="Orders & Tracking" items={ordersFaq} /></div>
+          <div id="payments"><FaqAccordion title="Payments & Refunds" items={paymentsFaq} /></div>
+          <div id="returns"><FaqAccordion title="Returns & Cancellations" items={returnsFaq} /></div>
+          <div id="account"><FaqAccordion title="Account & Profile" items={accountFaq} /></div>
+          <div id="delivery"><FaqAccordion title="Delivery" items={deliveryFaq} /></div>
+          <div id="product"><FaqAccordion title="Product Issues" items={productFaq} /></div>
+        </section>
 
-      <section className="mt-12">
-        <h2 className="mb-4 text-base font-semibold text-[#1c2734]">Still need help?</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <ContactCard icon={Mail} title="Email Us" value="support@shoppingindia.in" href="mailto:support@shoppingindia.in" />
-          <ContactCard icon={Phone} title="Call Us" value="1800-123-4567" href="tel:18001234567" />
-          <ContactCard icon={MessageCircle} title="Live Chat" value="Chat with us" href="#chat" />
-        </div>
-      </section>
-    </main>
+        <section className="mt-12">
+          <h2 className="mb-4 text-base font-semibold text-[#1c2734]">Still need help?</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <ContactCard icon={Mail} title="Email Us" value="support@shoppingindia.in" href="mailto:support@shoppingindia.in" />
+            <ContactCard icon={Phone} title="Call Us" value="1800-123-4567" href="tel:18001234567" />
+            <ContactCard icon={MessageCircle} title="Live Chat" value="Chat with us" href="#chat" />
+          </div>
+        </section>
+      </main>
+    </AuthRequired>
   );
 }

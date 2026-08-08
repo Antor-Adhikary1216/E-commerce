@@ -1,6 +1,7 @@
 "use client";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useCallback } from "react";
+import { useLoadingContext } from "@/contexts/loading-context";
 
 let startProgress: () => void;
 let finishProgress: () => void;
@@ -17,8 +18,8 @@ export function RouteProgress() {
   const rafRef = useRef<number>(0);
   const progressRef = useRef(0);
   const elRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const activeRef = useRef(0);
+  const { setRouteLoading, setApiLoading } = useLoadingContext();
 
   const setProgress = useCallback((value: number) => {
     progressRef.current = value;
@@ -61,25 +62,36 @@ export function RouteProgress() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    setRouteLoading(true);
     start();
-    const t = setTimeout(finish, 400);
+    const t = setTimeout(() => {
+      finish();
+      setRouteLoading(false);
+    }, 400);
     return () => clearTimeout(t);
-  }, [pathname, searchParams, start, finish]);
+  }, [pathname, searchParams, start, finish, setRouteLoading]);
 
   useEffect(() => {
     const reqInterceptor = (config: { __progress?: boolean }) => {
       config.__progress = true;
       start();
+      setApiLoading(true);
       return config;
     };
 
     const onFulfilled = (response: { config?: { __progress?: boolean } }) => {
-      if (response.config?.__progress) finish();
+      if (response.config?.__progress) {
+        finish();
+        setApiLoading(false);
+      }
       return response;
     };
 
     const onRejected = (error: { config?: { __progress?: boolean } }) => {
-      if (error.config?.__progress) finish();
+      if (error.config?.__progress) {
+        finish();
+        setApiLoading(false);
+      }
       return Promise.reject(error);
     };
 
@@ -92,7 +104,7 @@ export function RouteProgress() {
       instance.interceptors.request.eject(id);
       instance.interceptors.response.eject(idRes);
     };
-  }, [start, finish]);
+  }, [start, finish, setApiLoading]);
 
   return (
     <div
