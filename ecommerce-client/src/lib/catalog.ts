@@ -61,31 +61,44 @@ export interface CatalogQuery {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchCategories(): Promise<CatalogCategory[]> {
-  const res = await fetch(`${apiUrl}/categories`, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error(`Categories request failed (${res.status})`);
-  const data = (await res.json()) as { items: CatalogCategory[] };
-  return data.items;
+  try {
+    const res = await fetch(`${apiUrl}/categories`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { items: CatalogCategory[] };
+    return data.items;
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchCatalog(query: CatalogQuery = {}): Promise<{ items: CatalogProduct[]; pagination: CatalogPagination }> {
-  const params = new URLSearchParams();
-  if (query.category) params.set("category", query.category);
-  if (query.q) params.set("q", query.q);
-  if (query.sort) params.set("sort", query.sort);
-  if (query.feature) params.set("feature", query.feature);
-  if (query.page && query.page > 1) params.set("page", String(query.page));
-  if (query.limit) params.set("limit", String(query.limit));
+  const empty = { items: [] as CatalogProduct[], pagination: { page: 1, limit: 12, total: 0, pages: 0 } };
+  try {
+    const params = new URLSearchParams();
+    if (query.category) params.set("category", query.category);
+    if (query.q) params.set("q", query.q);
+    if (query.sort) params.set("sort", query.sort);
+    if (query.feature) params.set("feature", query.feature);
+    if (query.page && query.page > 1) params.set("page", String(query.page));
+    if (query.limit) params.set("limit", String(query.limit));
 
-  const res = await fetch(`${apiUrl}/products?${params}`, { next: { revalidate: 60 } });
-  if (!res.ok) throw new Error(`Products request failed (${res.status})`);
-  return (await res.json()) as { items: CatalogProduct[]; pagination: CatalogPagination };
+    const res = await fetch(`${apiUrl}/products?${params}`, { next: { revalidate: 60 } });
+    if (!res.ok) return empty;
+    return (await res.json()) as { items: CatalogProduct[]; pagination: CatalogPagination };
+  } catch {
+    return empty;
+  }
 }
 
 export async function fetchProduct(slug: string): Promise<CatalogProduct | null> {
-  const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { next: { revalidate: 120 } });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Product request failed (${res.status})`);
-  return (await res.json()) as CatalogProduct;
+  try {
+    const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { next: { revalidate: 120 } });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return (await res.json()) as CatalogProduct;
+  } catch {
+    return null;
+  }
 }
 
 export function productBadge(product: CatalogProduct): string | undefined {

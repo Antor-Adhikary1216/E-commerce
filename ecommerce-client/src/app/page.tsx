@@ -35,13 +35,8 @@ function ProductRow({ title, subtitle, products }: { title: string; subtitle: st
 }
 
 export default async function Home() {
-  let products: ProductCardData[] = [];
-  try {
-    const { items } = await fetchCatalog({ limit: 6, sort: "rating" });
-    products = items.map(toCard);
-  } catch {
-    // API unavailable — render page without products
-  }
+  const { items } = await fetchCatalog({ limit: 6, sort: "rating" });
+  const products = items.map(toCard);
 
   return (
     <main className="mx-auto max-w-[1440px] space-y-5 py-5">
