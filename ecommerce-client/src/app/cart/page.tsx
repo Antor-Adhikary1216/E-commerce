@@ -1,21 +1,22 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/store/cart";
-import { currency } from "@/lib/utils";
+import { useWishlist } from "@/store/wishlist";
 import { EmptyState } from "@/components/empty-state";
-import { apiClient } from "@/services/api-client";
+import { CartItemCard } from "@/components/cart-item-card";
+import { PriceDetails } from "@/components/price-details";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { swal } from "@/lib/swal";
 
 export default function CartPage() {
   const { items, count, subtotal, updateQuantity, remove, clear } = useCart();
+  const { toggle, isSaved } = useWishlist();
   const requireAuth = useRequireAuth();
-  const [checkingOut, setCheckingOut] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     requireAuth();
@@ -56,10 +57,10 @@ export default function CartPage() {
   async function confirmClearCart() {
     const result = await swal.fire({
       icon: "warning",
-      title: "Clear your cart?",
-      text: "All items will be removed. This cannot be undone.",
+      title: "Remove all items?",
+      text: "All items will be removed from your cart.",
       showCancelButton: true,
-      confirmButtonText: "Yes, clear cart",
+      confirmButtonText: "Yes, remove all",
       cancelButtonText: "Cancel",
     });
     if (result.isConfirmed) {
@@ -68,93 +69,61 @@ export default function CartPage() {
     }
   }
 
-  async function checkout() {
+  function handleSave(slug: string) {
+    const item = items.find((i) => i.product.slug === slug);
+    if (!item) return;
+    toggle(item.product);
+    toast.success(isSaved(slug) ? "Removed from saved" : "Saved for later");
+  }
+
+  function goToPlaceOrder() {
     if (!requireAuth()) return;
-    setCheckingOut(true);
-    try {
-      const { data } = await apiClient.post("/payments/create-checkout", {
-        items: items.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
-      });
-      window.location.href = data.url as string;
-    } catch (error) {
-      toast.error("Could not start checkout. Please try again.");
-    } finally {
-      setCheckingOut(false);
-    }
+    router.push("/place-order");
   }
 
   return (
     <main className="mx-auto max-w-[1240px] px-4 py-8">
-      <h1 className="text-2xl font-black">Your cart ({count})</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-black text-[#1c2734]">
+          My Cart <span className="text-base font-bold text-slate-500">({count} item{count !== 1 ? "s" : ""})</span>
+        </h1>
+        <button
+          type="button"
+          onClick={confirmClearCart}
+          className="text-[13px] font-semibold text-[#c0392b] transition hover:underline"
+        >
+          Remove all
+        </button>
+      </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
+      {/* Two-column layout */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+        {/* Cart items */}
         <div className="space-y-3">
           <AnimatePresence initial={false}>
             {items.map((item) => (
-              <motion.div
+              <CartItemCard
                 key={item.product.slug}
-                layout
-                initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -24, scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                className="flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)]"
-              >
-              <Link href={`/products/${item.product.slug}`} className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f3f0e9]">
-                <Image src={item.product.image} alt={item.product.name} fill sizes="96px" className="object-contain p-2" />
-              </Link>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <Link href={`/products/${item.product.slug}`} className="line-clamp-2 text-[13px] font-semibold hover:text-[#16815d]">
-                  {item.product.name}
-                </Link>
-                <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
-                  <div className="inline-flex items-center rounded-full border border-slate-200">
-                    <button type="button" onClick={() => updateQuantity(item.product.slug, item.quantity - 1)} aria-label="Decrease quantity" className="p-2 text-slate-500 hover:text-[#1c2734]">
-                      <Minus size={14} />
-                    </button>
-                    <motion.span key={item.quantity} initial={{ scale: 1.3 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 480, damping: 24 }} className="w-8 text-center text-[13px] font-semibold">{item.quantity}</motion.span>
-                    <button type="button" onClick={() => updateQuantity(item.product.slug, item.quantity + 1)} aria-label="Increase quantity" className="p-2 text-slate-500 hover:text-[#1c2734]">
-                      <Plus size={14} />
-                    </button>
-                  </div>
-                  <span className="text-sm font-bold">{currency(item.product.finalPrice * item.quantity)}</span>
-                  {item.product.finalPrice < item.product.price && <del className="text-xs text-slate-400">{currency(item.product.price * item.quantity)}</del>}
-                </div>
-              </div>
-              <button type="button" onClick={() => confirmRemove(item.product.slug, item.product.name)} aria-label={`Remove ${item.product.name} from cart`} className="h-fit rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-[#16815d]">
-                <Trash2 size={16} />
-              </button>
-              </motion.div>
+                item={item}
+                onUpdateQuantity={updateQuantity}
+                onRemove={confirmRemove}
+                onSave={handleSave}
+                saved={isSaved(item.product.slug)}
+              />
             ))}
           </AnimatePresence>
         </div>
 
-        <aside className="h-fit rounded-2xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
-          <h2 className="text-sm font-bold">Order summary</h2>
-          <dl className="mt-4 space-y-2.5 text-[13px]">
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Subtotal</dt>
-              <dd className="font-semibold">{currency(subtotal)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Delivery</dt>
-              <dd className="font-semibold text-[#16815d]">Free</dd>
-            </div>
-            <div className="flex justify-between border-t border-slate-100 pt-2.5 text-sm">
-              <dt className="font-bold">Total</dt>
-              <dd className="font-black"><motion.span key={subtotal} initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 420, damping: 24 }}>{currency(subtotal)}</motion.span></dd>
-            </div>
-          </dl>
-          <button type="button" onClick={checkout} disabled={checkingOut} className="mt-5 w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02] disabled:opacity-60">
-            {checkingOut ? "Redirecting to Stripe…" : "Proceed to checkout"}
-          </button>
-          <button type="button" onClick={confirmClearCart} className="mt-2.5 w-full rounded-full border border-slate-200 px-5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-[#c0392b]">
-            Clear cart
-          </button>
-          <Link href="/shop" className="mt-3 block text-center text-[13px] font-semibold text-[#16815d] hover:underline">
-            Continue shopping
-          </Link>
-        </aside>
+        {/* Price details sidebar */}
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <PriceDetails
+            subtotal={subtotal}
+            itemCount={count}
+            onCheckout={goToPlaceOrder}
+            checkingOut={false}
+          />
+        </div>
       </div>
     </main>
   );

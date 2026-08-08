@@ -51,6 +51,7 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
   });
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingAddress = req.body?.shippingAddress ?? null;
   const order = await OrderModel.create({
     orderNumber: orderNumber(),
     user: req.auth!.userId,
@@ -58,6 +59,7 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
     status: "pending",
     paymentMethod: "stripe",
     paymentStatus: "pending",
+    shippingAddress,
     subtotal,
     discount: 0,
     shippingCost: 0,
