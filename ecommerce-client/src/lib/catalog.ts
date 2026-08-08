@@ -61,7 +61,7 @@ export interface CatalogQuery {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchCategories(): Promise<CatalogCategory[]> {
-  const res = await fetch(`${apiUrl}/categories`, { cache: "no-store" });
+  const res = await fetch(`${apiUrl}/categories`, { next: { revalidate: 300 } });
   if (!res.ok) throw new Error(`Categories request failed (${res.status})`);
   const data = (await res.json()) as { items: CatalogCategory[] };
   return data.items;
@@ -76,13 +76,13 @@ export async function fetchCatalog(query: CatalogQuery = {}): Promise<{ items: C
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.limit) params.set("limit", String(query.limit));
 
-  const res = await fetch(`${apiUrl}/products?${params}`, { cache: "no-store" });
+  const res = await fetch(`${apiUrl}/products?${params}`, { next: { revalidate: 60 } });
   if (!res.ok) throw new Error(`Products request failed (${res.status})`);
   return (await res.json()) as { items: CatalogProduct[]; pagination: CatalogPagination };
 }
 
 export async function fetchProduct(slug: string): Promise<CatalogProduct | null> {
-  const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { cache: "no-store" });
+  const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { next: { revalidate: 120 } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Product request failed (${res.status})`);
   return (await res.json()) as CatalogProduct;

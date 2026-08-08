@@ -3,7 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Heart, Star, ShoppingCart, Zap } from "lucide-react";
+import { Heart, Star, ShoppingCart, Zap, Check } from "lucide-react";
+import toast from "react-hot-toast";
 import { currency } from "@/lib/utils";
 import { savedForLater } from "@/lib/swal";
 import { useCart } from "@/store/cart";
@@ -21,11 +22,12 @@ export interface ProductCardData {
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
-  const { add } = useCart();
+  const { add, items } = useCart();
   const { isSaved, toggle } = useWishlist();
   const requireAuth = useRequireAuth();
   const router = useRouter();
   const saved = isSaved(product.slug);
+  const inCart = items.some((item) => item.product.slug === product.slug);
 
   function handleSaved() {
     if (!requireAuth()) return;
@@ -36,6 +38,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     e.preventDefault();
     if (!requireAuth()) return;
     add(product);
+    toast.success(`${product.name} added to cart`);
   }
 
   function handleBuyNow(e: React.MouseEvent) {
@@ -78,7 +81,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           onClick={handleAddToCart}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#16815d] bg-white px-3 py-2 text-[11px] font-semibold text-[#16815d] transition hover:bg-[#e5ead9]"
         >
-          <ShoppingCart size={12} /> Add to Cart
+          {inCart ? <><Check size={12} /> In Cart</> : <><ShoppingCart size={12} /> Add to Cart</>}
         </button>
         <button
           onClick={handleBuyNow}

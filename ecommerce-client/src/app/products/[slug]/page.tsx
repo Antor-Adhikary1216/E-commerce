@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,15 +13,17 @@ interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
+const getProduct = cache(fetchProduct);
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
+  const product = await getProduct(slug);
   return { title: product ? product.name : "Product" };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
+  const product = await getProduct(slug);
   if (!product) notFound();
 
   const discountPercent = product.discount > 0 ? Math.round((1 - product.finalPrice / product.price) * 100) : 0;

@@ -3,11 +3,21 @@ import { OrderModel } from "../models/order.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 export async function listOrders(req: AuthRequest, res: Response): Promise<Response> {
-  const orders = await OrderModel.find({ user: req.auth!.userId })
-    .sort({ createdAt: -1 })
-    .select("orderNumber status paymentMethod paymentStatus items total createdAt")
-    .lean();
-  return res.json({ orders });
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    OrderModel.find({ user: req.auth!.userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select("orderNumber status paymentMethod paymentStatus items total createdAt")
+      .lean(),
+    OrderModel.countDocuments({ user: req.auth!.userId }),
+  ]);
+
+  return res.json({ orders, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
 }
 
 export async function getOrder(req: AuthRequest, res: Response): Promise<Response> {

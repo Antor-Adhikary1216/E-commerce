@@ -4,9 +4,9 @@ import type { AuthRequest } from "../middleware/auth.js";
 
 export async function getProfile(req: AuthRequest, res: Response) {
   try {
-    const user = await UserModel.findById(req.auth!.userId).select(
-      "name email avatar phone gender dateOfBirth addresses"
-    );
+    const user = await UserModel.findById(req.auth!.userId)
+      .select("name email avatar phone gender dateOfBirth addresses")
+      .lean();
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ user });
   } catch {
@@ -24,9 +24,9 @@ export async function updateProfile(req: AuthRequest, res: Response) {
     if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
     if (avatar !== undefined) updates.avatar = avatar || null;
 
-    const user = await UserModel.findByIdAndUpdate(req.auth!.userId, { $set: updates }, { new: true }).select(
-      "name email avatar phone gender dateOfBirth addresses"
-    );
+    const user = await UserModel.findByIdAndUpdate(req.auth!.userId, { $set: updates }, { new: true })
+      .select("name email avatar phone gender dateOfBirth addresses")
+      .lean();
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ user });
   } catch {
