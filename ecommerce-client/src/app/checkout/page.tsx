@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { INDIAN_STATES } from "@/constants/indian-states";
+import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { useCart } from "@/store/cart";
 import { currency } from "@/lib/utils";
@@ -237,29 +239,39 @@ function CheckoutContent() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    City *
+                    State *
                   </span>
-                  <input
-                    type="text"
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    placeholder="City"
-                    className={inputClass}
+                  <select
+                    value={form.state}
+                    onChange={(e) => {
+                      update("state", e.target.value);
+                      update("city", "");
+                    }}
+                    className={inputClass + " appearance-none"}
                     required
-                  />
+                  >
+                    <option value="">Select state</option>
+                    {INDIAN_STATES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    State *
+                    City *
                   </span>
-                  <input
-                    type="text"
-                    value={form.state}
-                    onChange={(e) => update("state", e.target.value)}
-                    placeholder="State"
-                    className={inputClass}
+                  <select
+                    value={form.city}
+                    onChange={(e) => update("city", e.target.value)}
+                    className={inputClass + " appearance-none"}
                     required
-                  />
+                    disabled={!form.state}
+                  >
+                    <option value="">{form.state ? "Select city" : "Select state first"}</option>
+                    {form.state && INDIAN_CITIES[form.state]?.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">

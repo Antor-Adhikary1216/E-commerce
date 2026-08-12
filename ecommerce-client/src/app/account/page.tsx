@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { LogOut, Package, UserRound, MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
+import { INDIAN_STATES } from "@/constants/indian-states";
+import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { apiClient } from "@/services/api-client";
 import { EmptyState } from "@/components/empty-state";
@@ -382,12 +384,22 @@ export default function AccountPage() {
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">City</span>
-                  <input type="text" value={addressForm.city} onChange={(e) => setAddressForm((f) => ({ ...f, city: e.target.value }))} placeholder="City" className={inputClass} />
+                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">State</span>
+                  <select value={addressForm.state} onChange={(e) => setAddressForm((f) => ({ ...f, state: e.target.value, city: "" }))} className={inputClass + " appearance-none"}>
+                    <option value="">Select state</option>
+                    {INDIAN_STATES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">State</span>
-                  <input type="text" value={addressForm.state} onChange={(e) => setAddressForm((f) => ({ ...f, state: e.target.value }))} placeholder="State" className={inputClass} />
+                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">City</span>
+                  <select value={addressForm.city} onChange={(e) => setAddressForm((f) => ({ ...f, city: e.target.value }))} className={inputClass + " appearance-none"} disabled={!addressForm.state}>
+                    <option value="">{addressForm.state ? "Select city" : "Select state first"}</option>
+                    {addressForm.state && INDIAN_CITIES[addressForm.state]?.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-3">

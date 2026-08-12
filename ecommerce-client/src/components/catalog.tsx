@@ -4,6 +4,7 @@ import { fetchCatalog, fetchCategories, productBadge, type CatalogQuery } from "
 import type { ProductCardData } from "@/components/product-card";
 import { ProductGrid } from "@/components/motion/product-grid";
 import { EmptyState } from "@/components/empty-state";
+import { SearchResults } from "@/components/search-results";
 
 const sortOptions = [
   { key: "", label: "Newest" },
@@ -21,9 +22,10 @@ export interface CatalogProps {
   subtitle: string;
   emptyTitle?: string;
   emptyMessage?: string;
+  searchQuery?: string;
 }
 
-export async function Catalog({ basePath, query, title, subtitle, emptyTitle = "Nothing to show here", emptyMessage = "Try another category or check back later." }: CatalogProps) {
+export async function Catalog({ basePath, query, title, subtitle, emptyTitle = "Nothing to show here", emptyMessage = "Try another category or check back later.", searchQuery }: CatalogProps) {
   const [categories, { items, pagination }] = await Promise.all([fetchCategories(), fetchCatalog(query)]);
 
   const activeCategory = query.category ? categories.find((c) => c.slug === query.category || c.name === query.category) : undefined;
@@ -54,77 +56,79 @@ export async function Catalog({ basePath, query, title, subtitle, emptyTitle = "
   }));
 
   return (
-    <main className="mx-auto max-w-[1440px] px-3 py-5">
-      <header className="px-3">
-        <h1 className="text-2xl font-black">{heading}</h1>
-        <p className="mt-1 text-[13px] text-slate-500">{headingSubtitle}</p>
-      </header>
+    <SearchResults query={searchQuery ?? ""} isEmpty={items.length === 0}>
+      <main className="mx-auto max-w-[1440px] px-3 py-5">
+        <header className="px-3">
+          <h1 className="text-2xl font-black">{heading}</h1>
+          <p className="mt-1 text-[13px] text-slate-500">{headingSubtitle}</p>
+        </header>
 
-      <div className="my-4 flex flex-wrap items-center justify-between gap-3 px-3">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <Link
-            href={href({ category: null })}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition ${!activeCategory ? "bg-[#1c2734] text-white" : "bg-white text-[#1c2734] hover:bg-[#e5ead9]"}`}
-          >
-            All
-          </Link>
-          {categories.map((category) => (
+        <div className="my-4 flex flex-wrap items-center justify-between gap-3 px-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <Link
-              key={category._id}
-              href={href({ category: category.slug })}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition ${activeCategory?.slug === category.slug ? "bg-[#1c2734] text-white" : "bg-white text-[#1c2734] hover:bg-[#e5ead9]"}`}
+              href={href({ category: null })}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition ${!activeCategory ? "bg-[#1c2734] text-white" : "bg-white text-[#1c2734] hover:bg-[#e5ead9]"}`}
             >
-              {category.name}
-              <span className="ml-1.5 text-[11px] opacity-60">{category.count}</span>
+              All
             </Link>
-          ))}
+            {categories.map((category) => (
+              <Link
+                key={category._id}
+                href={href({ category: category.slug })}
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition ${activeCategory?.slug === category.slug ? "bg-[#1c2734] text-white" : "bg-white text-[#1c2734] hover:bg-[#e5ead9]"}`}
+              >
+                {category.name}
+                <span className="ml-1.5 text-[11px] opacity-60">{category.count}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 text-[13px]">
+            {sortOptions.map((option) => (
+              <Link
+                key={option.key || "latest"}
+                href={href({ sort: option.key || undefined })}
+                className={`rounded-full px-3 py-2 font-medium transition ${(query.sort || "") === option.key ? "bg-[#e5ead9] text-[#16815d]" : "text-slate-500 hover:text-[#1c2734]"}`}
+              >
+                {option.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 text-[13px]">
-          {sortOptions.map((option) => (
+        {items.length === 0 ? (
+          <EmptyState
+            icon={<span className="text-2xl">{"{}"}</span>}
+            title={emptyTitle}
+            message={emptyMessage}
+            action={{ href: basePath, label: "View all products" }}
+          />
+        ) : (
+          <ProductGrid cards={cards} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" />
+        )}
+
+        {pagination.pages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-8">
             <Link
-              key={option.key || "latest"}
-              href={href({ sort: option.key || undefined })}
-              className={`rounded-full px-3 py-2 font-medium transition ${(query.sort || "") === option.key ? "bg-[#e5ead9] text-[#16815d]" : "text-slate-500 hover:text-[#1c2734]"}`}
+              href={href({ page: pagination.page - 1 })}
+              aria-label="Previous page"
+              className={`inline-flex items-center rounded-full bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)] ${pagination.page <= 1 ? "pointer-events-none opacity-40" : "hover:bg-[#e5ead9]"}`}
             >
-              {option.label}
+              <ChevronLeft size={16} />
             </Link>
-          ))}
-        </div>
-      </div>
-
-      {items.length === 0 ? (
-        <EmptyState
-          icon={<span className="text-2xl">{"{}"}</span>}
-          title={emptyTitle}
-          message={emptyMessage}
-          action={{ href: basePath, label: "View all products" }}
-        />
-      ) : (
-        <ProductGrid cards={cards} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" />
-      )}
-
-      {pagination.pages > 1 && (
-        <div className="flex items-center justify-center gap-3 pt-8">
-          <Link
-            href={href({ page: pagination.page - 1 })}
-            aria-label="Previous page"
-            className={`inline-flex items-center rounded-full bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)] ${pagination.page <= 1 ? "pointer-events-none opacity-40" : "hover:bg-[#e5ead9]"}`}
-          >
-            <ChevronLeft size={16} />
-          </Link>
-          <span className="text-[13px] font-medium text-slate-500">
-            Page {pagination.page} of {pagination.pages}
-          </span>
-          <Link
-            href={href({ page: pagination.page + 1 })}
-            aria-label="Next page"
-            className={`inline-flex items-center rounded-full bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)] ${pagination.page >= pagination.pages ? "pointer-events-none opacity-40" : "hover:bg-[#e5ead9]"}`}
-          >
-            <ChevronRight size={16} />
-          </Link>
-        </div>
-      )}
-    </main>
+            <span className="text-[13px] font-medium text-slate-500">
+              Page {pagination.page} of {pagination.pages}
+            </span>
+            <Link
+              href={href({ page: pagination.page + 1 })}
+              aria-label="Next page"
+              className={`inline-flex items-center rounded-full bg-white p-2 shadow-[0_1px_4px_rgba(0,0,0,.12)] ${pagination.page >= pagination.pages ? "pointer-events-none opacity-40" : "hover:bg-[#e5ead9]"}`}
+            >
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+        )}
+      </main>
+    </SearchResults>
   );
 }

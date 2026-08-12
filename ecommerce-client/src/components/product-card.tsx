@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Heart, Star, ShoppingCart, Zap, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { currency } from "@/lib/utils";
-import { savedForLater } from "@/lib/swal";
+import { savedForLater, duplicateItemConfirm } from "@/lib/swal";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
 import { useRequireAuth } from "@/lib/use-require-auth";
@@ -34,9 +34,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     savedForLater(product.name, toggle(product));
   }
 
-  function handleAddToCart(e: React.MouseEvent) {
+  async function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     if (!requireAuth()) return;
+    if (inCart) {
+      const result = await duplicateItemConfirm(product.name);
+      if (!result.isConfirmed) return;
+    }
     add(product);
     toast.success(`${product.name} added to cart`);
   }
@@ -45,7 +49,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     e.preventDefault();
     if (!requireAuth()) return;
     add(product);
-    router.push("/cart");
+    router.push(`/checkout?items=${encodeURIComponent(product.slug)}`);
   }
 
   return (

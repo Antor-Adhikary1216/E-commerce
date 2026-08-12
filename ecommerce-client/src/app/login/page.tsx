@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile, type Auth } from "firebase/auth";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Heart, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -22,13 +22,6 @@ const errorMessages: Record<string, string> = {
   "auth/network-request-failed": "Network error. Check your connection.",
   "auth/invalid-api-key": "Firebase isn't configured. Add the Firebase keys to ecommerce-client/.env.local.",
 };
-
-const benefits = [
-  { icon: Heart, title: "Save favourites", text: "Keep a shortlist that follows you anywhere." },
-  { icon: Truck, title: "Free delivery", text: "On every order over the mark." },
-  { icon: RotateCcw, title: "Easy returns", text: "7-day, no-questions returns." },
-  { icon: ShieldCheck, title: "Secure checkout", text: "Payments you can trust." },
-];
 
 const inputClass =
   "h-11 w-full rounded-full border border-slate-200 bg-[#faf9f5] px-5 text-[13px] text-[#1c2734] placeholder:text-slate-400 focus:border-[#16815d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#16815d]/15";
@@ -166,49 +159,9 @@ export default function LoginPage() {
     }
   }
 
-  const year = new Date().getFullYear();
-
   return (
-    <main className="md:grid md:min-h-[calc(100vh-7rem)] md:grid-cols-[1fr_1.05fr]">
-      <section className="relative hidden overflow-hidden bg-[#1c2734] text-white md:flex md:flex-col md:justify-between md:px-14 md:py-12">
-        <div className="pointer-events-none absolute -right-24 -top-28 h-96 w-96 rounded-full bg-[#d8ef72]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 -left-20 h-80 w-80 rounded-full bg-[#16815d]/25 blur-3xl" />
-
-        <Link href="/" className="relative text-2xl font-black tracking-tight">
-          VANTA<span className="text-[#d8ef72]">/</span>
-        </Link>
-
-        <div className="relative">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#d8ef72]">Members get more</p>
-          <h1 className="mt-4 text-5xl font-black leading-[.98]">
-            Good things.
-            <br />
-            Better prices.
-          </h1>
-          <p className="mt-5 max-w-sm text-[13px] leading-6 text-white/70">
-            Sign in to save favourites, keep your cart synced and check out in a couple of taps.
-          </p>
-
-          <ul className="mt-9 space-y-4">
-            {benefits.map((benefit) => (
-              <li key={benefit.title} className="flex items-center gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#d8ef72]">
-                  <benefit.icon size={17} />
-                </span>
-                <span>
-                  <span className="block text-[13px] font-semibold">{benefit.title}</span>
-                  <span className="block text-[12px] text-white/50">{benefit.text}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="relative text-[11px] text-white/40">© {year} Vanta Commerce</p>
-      </section>
-
-      <section className="flex min-h-[70vh] items-center justify-center px-4 py-10 md:min-h-0 md:py-12">
-        <div className="w-full max-w-md">
+    <main className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md">
           <Link href="/" className="mb-8 inline-flex items-center gap-1.5 text-[15px] font-black tracking-tight text-[#1c2734] md:hidden">
             VANTA<span className="text-[#16815d]">/</span>
           </Link>
@@ -380,7 +333,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-      </section>
     </main>
   );
 }

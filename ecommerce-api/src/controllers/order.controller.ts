@@ -1,5 +1,6 @@
 import type { Response } from "express";
 import { OrderModel } from "../models/order.model.js";
+import { ShippingDetailModel } from "../models/shipping-detail.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 export async function listOrders(req: AuthRequest, res: Response): Promise<Response> {
@@ -24,7 +25,7 @@ export async function getOrder(req: AuthRequest, res: Response): Promise<Respons
   const order = await OrderModel.findOne({
     _id: req.params.id,
     user: req.auth!.userId,
-  }).lean();
+  }).populate("shippingDetail").lean();
   if (!order) return res.status(404).json({ message: "Order not found" });
   return res.json({ order });
 }
@@ -37,4 +38,13 @@ export async function getOrderBySession(req: AuthRequest, res: Response): Promis
     .lean();
   if (!order) return res.status(404).json({ message: "Order not found" });
   return res.json({ order });
+}
+
+export async function getOrderShippingDetail(req: AuthRequest, res: Response): Promise<Response> {
+  const detail = await ShippingDetailModel.findOne({
+    order: req.params.id,
+    user: req.auth!.userId,
+  }).lean();
+  if (!detail) return res.status(404).json({ message: "Shipping details not found" });
+  return res.json({ shippingDetail: detail });
 }

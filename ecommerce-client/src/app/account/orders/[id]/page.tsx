@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
+import { ArrowLeft, Package, MapPin } from "lucide-react";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { apiClient } from "@/services/api-client";
 import { currency } from "@/lib/utils";
@@ -17,6 +17,19 @@ interface OrderItem {
   quantity: number;
 }
 
+interface ShippingDetail {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
 interface Order {
   _id: string;
   orderNumber: string;
@@ -24,6 +37,7 @@ interface Order {
   paymentMethod: string;
   paymentStatus: string;
   items: OrderItem[];
+  shippingDetail: ShippingDetail | null;
   subtotal: number;
   discount: number;
   shippingCost: number;
@@ -220,6 +234,35 @@ export default function OrderDetailPage() {
           </span>
         </div>
       </div>
+
+      {/* Shipping Details */}
+      {order.shippingDetail && (
+        <div className="mt-4 rounded-2xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-bold">
+            <MapPin size={16} />
+            Shipping Details
+          </h2>
+          <div className="space-y-1.5 text-[13px]">
+            <p className="font-semibold text-[#1c2734]">{order.shippingDetail.name}</p>
+            <p className="text-slate-500">{order.shippingDetail.line1}</p>
+            {order.shippingDetail.line2 && <p className="text-slate-500">{order.shippingDetail.line2}</p>}
+            <p className="text-slate-500">
+              {order.shippingDetail.city}, {order.shippingDetail.state} {order.shippingDetail.postalCode}
+            </p>
+            <p className="text-slate-500">{order.shippingDetail.country}</p>
+            <div className="mt-2 border-t border-slate-100 pt-2">
+              <p className="text-slate-500">
+                <span className="font-medium text-[#1c2734]">Phone:</span> {order.shippingDetail.phone}
+              </p>
+              {order.shippingDetail.email && (
+                <p className="text-slate-500">
+                  <span className="font-medium text-[#1c2734]">Email:</span> {order.shippingDetail.email}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

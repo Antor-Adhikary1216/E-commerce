@@ -20,6 +20,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       subtitle={q ? "Showing matching products" : "Type a product name, brand or category"}
       emptyTitle="Coming Soon"
       emptyMessage={`No products found for "${q}". We're working on adding more — check back soon!`}
+      searchQuery={q}
     />
   );
 }

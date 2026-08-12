@@ -31,3 +31,23 @@ export function savedForLater(name: string, saved: boolean) {
     timerProgressBar: true,
   });
 }
+
+export function productNotFound(query: string) {
+  return swal.fire({
+    icon: "info",
+    title: "Product not available",
+    text: `Sorry, we couldn't find "${query}". Please try again later or explore other products.`,
+    confirmButtonText: "OK",
+  });
+}
+
+export function duplicateItemConfirm(name: string) {
+  return swal.fire({
+    icon: "warning",
+    title: "Already in cart",
+    text: `"${name}" is already in your cart. Do you want to add it again?`,
+    showCancelButton: true,
+    confirmButtonText: "Yes, add it",
+    cancelButtonText: "No, cancel",
+  });
+}

@@ -4,6 +4,7 @@ import { env } from "../config/env.js";
 import { getStripe } from "../config/stripe.js";
 import { ProductModel } from "../models/product.model.js";
 import { OrderModel } from "../models/order.model.js";
+import { ShippingDetailModel } from "../models/shipping-detail.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 const currency = "inr";
@@ -52,6 +53,25 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingAddress = req.body?.shippingAddress ?? null;
+
+  let shippingDetailId: string | undefined;
+  if (shippingAddress && shippingAddress.name && shippingAddress.line1 && shippingAddress.city) {
+    const detail = await ShippingDetailModel.create({
+      order: undefined,
+      user: req.auth!.userId,
+      name: shippingAddress.name,
+      email: shippingAddress.email ?? "",
+      phone: shippingAddress.phone ?? "",
+      line1: shippingAddress.line1,
+      line2: shippingAddress.line2 ?? "",
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      postalCode: shippingAddress.postalCode,
+      country: shippingAddress.country ?? "India",
+    });
+    shippingDetailId = detail._id.toString();
+  }
+
   const order = await OrderModel.create({
     orderNumber: orderNumber(),
     user: req.auth!.userId,
@@ -59,6 +79,7 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
     status: "pending",
     paymentMethod: "stripe",
     paymentStatus: "pending",
+    shippingDetail: shippingDetailId,
     shippingAddress,
     subtotal,
     discount: 0,
@@ -66,6 +87,10 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
     tax: 0,
     total: subtotal,
   });
+
+  if (shippingDetailId) {
+    await ShippingDetailModel.updateOne({ _id: shippingDetailId }, { $set: { order: order._id } });
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

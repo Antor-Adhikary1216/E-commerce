@@ -59,20 +59,31 @@ export interface CatalogQuery {
 }
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const FETCH_TIMEOUT_MS = 8000;
+
+function withTimeout(ms: number) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return { signal: controller.signal, cleanup: () => clearTimeout(id) };
+}
 
 export async function fetchCategories(): Promise<CatalogCategory[]> {
+  const { signal, cleanup } = withTimeout(FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(`${apiUrl}/categories`, { next: { revalidate: 300 } });
+    const res = await fetch(`${apiUrl}/categories`, { next: { revalidate: 300 }, signal });
     if (!res.ok) return [];
     const data = (await res.json()) as { items: CatalogCategory[] };
     return data.items;
   } catch {
     return [];
+  } finally {
+    cleanup();
   }
 }
 
 export async function fetchCatalog(query: CatalogQuery = {}): Promise<{ items: CatalogProduct[]; pagination: CatalogPagination }> {
   const empty = { items: [] as CatalogProduct[], pagination: { page: 1, limit: 12, total: 0, pages: 0 } };
+  const { signal, cleanup } = withTimeout(FETCH_TIMEOUT_MS);
   try {
     const params = new URLSearchParams();
     if (query.category) params.set("category", query.category);
@@ -82,22 +93,27 @@ export async function fetchCatalog(query: CatalogQuery = {}): Promise<{ items: C
     if (query.page && query.page > 1) params.set("page", String(query.page));
     if (query.limit) params.set("limit", String(query.limit));
 
-    const res = await fetch(`${apiUrl}/products?${params}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${apiUrl}/products?${params}`, { next: { revalidate: 60 }, signal });
     if (!res.ok) return empty;
     return (await res.json()) as { items: CatalogProduct[]; pagination: CatalogPagination };
   } catch {
     return empty;
+  } finally {
+    cleanup();
   }
 }
 
 export async function fetchProduct(slug: string): Promise<CatalogProduct | null> {
+  const { signal, cleanup } = withTimeout(FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { next: { revalidate: 120 } });
+    const res = await fetch(`${apiUrl}/products/${encodeURIComponent(slug)}`, { next: { revalidate: 120 }, signal });
     if (res.status === 404) return null;
     if (!res.ok) return null;
     return (await res.json()) as CatalogProduct;
   } catch {
     return null;
+  } finally {
+    cleanup();
   }
 }
 
