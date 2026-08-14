@@ -1,1 +1,34 @@
-import { Schema,model } from "mongoose"; const schema=new Schema({orderNumber:{type:String,unique:true,index:true},user:{type:Schema.Types.ObjectId,ref:"User",required:true,index:true},items:[{product:{type:Schema.Types.ObjectId,ref:"Product"},name:String,image:String,price:Number,quantity:{type:Number,min:1}}],status:{type:String,enum:["pending","confirmed","packed","shipped","out_for_delivery","delivered","cancelled"],default:"pending",index:true},paymentMethod:{type:String,enum:["stripe","razorpay","cod"]},paymentStatus:{type:String,enum:["pending","paid","failed"],default:"pending"},shippingDetail:{type:Schema.Types.ObjectId,ref:"ShippingDetail"},shippingAddress:Schema.Types.Mixed,billingAddress:Schema.Types.Mixed,subtotal:Number,discount:Number,shippingCost:Number,tax:Number,total:Number,stripeSessionId:String,stripePaymentIntent:String},{timestamps:true}); schema.index({user:1,createdAt:-1}); export const OrderModel=model("Order",schema);
+import { Schema, model } from "mongoose";
+const schema = new Schema({
+  orderNumber: { type: String, unique: true, index: true },
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+  items: [
+    {
+      product: { type: Schema.Types.ObjectId, ref: "Product" },
+      name: String,
+      image: String,
+      price: Number,
+      quantity: { type: Number, min: 1 },
+    },
+  ],
+  status: {
+    type: String,
+    enum: ["pending", "confirmed", "packed", "shipped", "out_for_delivery", "delivered", "cancelled"],
+    default: "pending",
+    index: true,
+  },
+  paymentMethod: { type: String, enum: ["stripe", "cod"] },
+  paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
+  shippingDetail: { type: Schema.Types.ObjectId, ref: "ShippingDetail" },
+  shippingAddress: Schema.Types.Mixed,
+  billingAddress: Schema.Types.Mixed,
+  subtotal: Number,
+  discount: Number,
+  shippingCost: Number,
+  tax: Number,
+  total: Number,
+  stripeSessionId: String,
+  stripePaymentIntent: String,
+}, { timestamps: true });
+schema.index({ user: 1, createdAt: -1 });
+export const OrderModel = model("Order", schema);

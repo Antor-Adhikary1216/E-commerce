@@ -19,7 +19,7 @@ export default function PlaceOrderPage() {
 
   useEffect(() => {
     requireAuth();
-  }, []);
+  }, [requireAuth]);
 
   // Auto-select all items on mount
   useEffect(() => {

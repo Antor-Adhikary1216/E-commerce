@@ -16,6 +16,7 @@
 | Notifications | react-hot-toast, SweetAlert2 |
 | Icons | Lucide React |
 | Utilities | clsx, tailwind-merge, class-variance-authority |
+| Linting | ESLint (flat config) |
 
 ## Backend (`ecommerce-api`)
 
@@ -29,6 +30,14 @@
 | Auth | Firebase Admin SDK |
 | Email | Nodemailer |
 | File Upload | Cloudinary |
+
+## Payment Methods
+
+| Method | Status | Notes |
+|---|---|---|
+| Stripe | Active | Full checkout flow with webhooks |
+| Cash on Delivery | Active | Manual order confirmation |
+| Razorpay | Planned | Env vars defined, not yet implemented |
 
 ## Deployment
 

@@ -3,7 +3,8 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, ShieldCheck, ShoppingCart } from "lucide-react";
 import { INDIAN_STATES } from "@/constants/indian-states";
 import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -51,7 +52,7 @@ function CheckoutContent() {
 
   useEffect(() => {
     requireAuth();
-  }, []);
+  }, [requireAuth]);
 
   // Pre-fill name & email from Firebase auth, phone from profile API
   useEffect(() => {
@@ -119,6 +120,7 @@ function CheckoutContent() {
         shippingAddress: {
           name: form.name,
           phone: form.phone,
+          email: form.email,
           line1: form.line1,
           line2: form.line2,
           city: form.city,
@@ -127,7 +129,8 @@ function CheckoutContent() {
           country: form.country,
         },
       });
-      window.location.href = data.url as string;
+
+      window.location.href = data.url;
     } catch {
       toast.error("Could not start checkout. Please try again.");
     } finally {
@@ -306,13 +309,21 @@ function CheckoutContent() {
           </div>
 
           {/* Mobile submit button */}
-          <button
+          <motion.button
             type="submit"
             disabled={submitting || !isValid()}
-            className="w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:opacity-50 lg:hidden"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(0, 122, 255, 0.35)" }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className="flex w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-3.5 text-[15px] font-semibold leading-none text-white shadow-[0_4px_14px_rgba(0,122,255,0.25)] transition-colors hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 lg:hidden"
           >
-            {submitting ? "Redirecting..." : `Proceed to Payment (${totalItems})`}
-          </button>
+            {submitting ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <ShoppingCart size={17} className="shrink-0" />
+            )}
+            <span className="leading-none">Checkout ({totalItems})</span>
+          </motion.button>
         </form>
 
         {/* Order Summary sidebar */}
@@ -355,14 +366,22 @@ function CheckoutContent() {
             </dl>
 
             {/* Desktop submit button */}
-            <button
+            <motion.button
               type="submit"
               form="checkout-form"
               disabled={submitting || !isValid()}
-              className="mt-5 hidden w-full rounded-full bg-[#16815d] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:opacity-50 lg:block"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(0, 122, 255, 0.35)" }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              className="mt-5 hidden w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-3.5 text-[15px] font-semibold leading-none text-white shadow-[0_4px_14px_rgba(0,122,255,0.25)] transition-colors hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 lg:flex"
             >
-              {submitting ? "Redirecting..." : `Proceed to Payment (${totalItems})`}
-            </button>
+              {submitting ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <ShoppingCart size={17} className="shrink-0" />
+              )}
+              <span className="leading-none">Checkout ({totalItems})</span>
+            </motion.button>
 
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
               <ShieldCheck size={14} />

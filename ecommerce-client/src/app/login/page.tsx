@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -9,7 +9,8 @@ import { ArrowLeft } from "lucide-react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { getFirebaseAuth } from "@/lib/firebase";
-import { setAccessToken } from "@/lib/token";
+import { getAccessToken, setAccessToken } from "@/lib/token";
+import { useAuthUser } from "@/lib/use-auth-user";
 import { apiClient } from "@/services/api-client";
 
 const errorMessages: Record<string, string> = {
@@ -30,12 +31,16 @@ function messageFor(code: string) {
   return errorMessages[code] ?? "Something went wrong. Please try again.";
 }
 
-function apiMessage(error: unknown): string | null {
+function formatError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as { message?: string } | undefined;
-    return data?.message ?? null;
+    if (data?.message) return data.message;
+    if (!error.response) return "Could not reach the server. Check your connection and try again.";
   }
-  return null;
+  const code = (error as { code?: string }).code ?? "";
+  if (code) return messageFor(code);
+  if (error instanceof Error && error.message) return error.message;
+  return "Something went wrong. Please try again.";
 }
 
 export default function LoginPage() {
@@ -54,6 +59,16 @@ export default function LoginPage() {
   const [verifyingEmail, setVerifyingEmail] = useState("");
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
+
+  const user = useAuthUser();
+
+  useEffect(() => {
+    if (user && getAccessToken()) {
+      const target = new URLSearchParams(window.location.search).get("redirect");
+      const safeTarget = target && target.startsWith("/") && !target.startsWith("//") ? target : "/account";
+      router.replace(safeTarget);
+    }
+  }, [user, router]);
 
   async function exchange() {
     const auth = getFirebaseAuth();
@@ -99,7 +114,7 @@ export default function LoginPage() {
       if (axios.isAxiosError(error) && error.response?.status === 403 && (error.response.data as { code?: string })?.code === "EMAIL_NOT_VERIFIED") {
         await startVerification();
       } else {
-        toast.error(apiMessage(error) ?? messageFor((error as { code?: string }).code ?? ""));
+        toast.error(formatError(error));
       }
     } finally {
       setSubmitting(false);
@@ -121,7 +136,7 @@ export default function LoginPage() {
       await apiClient.post("/auth/send-otp", { email: verifyingEmail || email });
       toast.success("Verification code sent to your email.");
     } catch (error) {
-      toast.error(apiMessage(error) ?? "Could not send the code. Try again.");
+      toast.error(formatError(error) || "Could not send the code. Try again.");
     } finally {
       setOtpSending(false);
     }
@@ -134,7 +149,7 @@ export default function LoginPage() {
       await exchange();
       finish();
     } catch (error) {
-      toast.error(apiMessage(error) ?? "Invalid code. Try again.");
+      toast.error(formatError(error) || "Invalid code. Try again.");
     } finally {
       setOtpVerifying(false);
     }
@@ -153,7 +168,12 @@ export default function LoginPage() {
       finish();
     } catch (error) {
       const code = (error as { code?: string }).code ?? "";
-      if (code !== "auth/popup-closed-by-user") toast.error(messageFor(code));
+      if (code === "auth/popup-closed-by-user") return;
+      if (axios.isAxiosError(error) && error.response?.status === 403 && (error.response.data as { code?: string })?.code === "EMAIL_NOT_VERIFIED") {
+        await startVerification();
+      } else {
+        toast.error(formatError(error));
+      }
     } finally {
       setSubmitting(false);
     }

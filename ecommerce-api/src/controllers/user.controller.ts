@@ -57,7 +57,7 @@ export async function updateAddress(req: AuthRequest, res: Response) {
     const user = await UserModel.findById(req.auth!.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const address = user.addresses.id(id);
+    const address = user.addresses.id(id as string);
     if (!address) return res.status(404).json({ message: "Address not found" });
 
     if (label !== undefined) address.label = label;
@@ -83,7 +83,7 @@ export async function deleteAddress(req: AuthRequest, res: Response) {
     const user = await UserModel.findById(req.auth!.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const address = user.addresses.id(id);
+    const address = user.addresses.id(id as string);
     if (!address) return res.status(404).json({ message: "Address not found" });
 
     user.addresses.pull(id);

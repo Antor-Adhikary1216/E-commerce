@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const schema = new Schema(
   {
-    order: { type: Schema.Types.ObjectId, ref: "Order", required: true, index: true },
+    order: { type: Schema.Types.ObjectId, ref: "Order", index: true },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },

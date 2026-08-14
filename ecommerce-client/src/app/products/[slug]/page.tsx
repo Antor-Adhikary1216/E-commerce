@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className="mt-4 grid gap-6 md:grid-cols-2">
         <Reveal className="relative aspect-square overflow-hidden rounded-2xl bg-white shadow-[0_1px_4px_rgba(0,0,0,.12)]" y={24}>
           <Image
-            src={product.images[0]}
+            src={product.images[0] ?? "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=80"}
             alt={product.name}
             fill
             sizes="(max-width:768px) 100vw, 50vw"

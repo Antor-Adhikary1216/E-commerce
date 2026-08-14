@@ -52,7 +52,7 @@ export default function OrdersPage() {
       .then(({ data }) => setOrders(data.orders))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [requireAuth]);
 
   if (loading) {
     return (

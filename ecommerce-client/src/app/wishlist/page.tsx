@@ -12,7 +12,7 @@ export default function WishlistPage() {
 
   useEffect(() => {
     requireAuth();
-  }, []);
+  }, [requireAuth]);
 
   if (items.length === 0) {
     return (

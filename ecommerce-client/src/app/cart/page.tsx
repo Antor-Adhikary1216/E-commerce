@@ -20,7 +20,7 @@ export default function CartPage() {
 
   useEffect(() => {
     requireAuth();
-  }, []);
+  }, [requireAuth]);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("canceled") === "1") {
@@ -72,8 +72,9 @@ export default function CartPage() {
   function handleSave(slug: string) {
     const item = items.find((i) => i.product.slug === slug);
     if (!item) return;
+    const wasSaved = isSaved(slug);
     toggle(item.product);
-    toast.success(isSaved(slug) ? "Removed from saved" : "Saved for later");
+    toast.success(wasSaved ? "Removed from saved" : "Saved for later");
   }
 
   function goToPlaceOrder() {

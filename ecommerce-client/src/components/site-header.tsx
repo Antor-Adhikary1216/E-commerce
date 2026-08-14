@@ -65,7 +65,7 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const showDropdown = dropdownOpen && (searchQuery.trim() ? suggestions.length > 0 : history.length > 0 || true);
+  const showDropdown = dropdownOpen && (searchQuery.trim() ? suggestions.length > 0 : history.length > 0);
 
   return (
     <header className="sticky top-0 z-50">

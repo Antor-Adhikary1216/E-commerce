@@ -75,7 +75,7 @@ export default function OrderDetailPage() {
       .then(({ data }) => setOrder(data.order))
       .catch(() => router.push("/account/orders"))
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [params.id, requireAuth, router]);
 
   if (loading) {
     return (

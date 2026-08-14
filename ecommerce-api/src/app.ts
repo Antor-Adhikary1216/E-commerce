@@ -11,7 +11,7 @@ import authRoutes from "./routes/auth.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import { handleWebhook } from "./controllers/payment.controller.js";
+import { handleStripeWebhook } from "./controllers/payment.controller.js";
 import { errorHandler } from "./middleware/error.js";
 
 export const app = express();
@@ -20,7 +20,7 @@ app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(rateLimit({ windowMs: 15 * 60_000, limit: 300, standardHeaders: "draft-8", legacyHeaders: false }));
-app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }), handleWebhook);
+app.use("/api/v1/payments/webhook/stripe", express.raw({ type: "application/json" }), handleStripeWebhook);
 app.use(express.json({ limit: "3mb" }));
 app.use(cookieParser());
 app.use((req, _, next) => {

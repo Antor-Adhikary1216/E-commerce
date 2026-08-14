@@ -12,17 +12,20 @@ function CheckoutSuccessContent() {
   const { clear } = useCart();
   const requireAuth = useRequireAuth();
   const sessionId = searchParams.get("session_id");
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const orderNumberParam = searchParams.get("order_number");
+  const [orderNumber, setOrderNumber] = useState<string | null>(orderNumberParam);
 
   useEffect(() => {
-    clear();
     if (sessionId && requireAuth()) {
       apiClient
         .get(`/orders/session/${sessionId}`)
-        .then(({ data }) => setOrderNumber(data.order.orderNumber))
+        .then(({ data }) => {
+          setOrderNumber(data.order.orderNumber);
+          clear();
+        })
         .catch(() => {});
     }
-  }, [clear, sessionId]);
+  }, [clear, sessionId, requireAuth]);
 
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-16 text-center">
