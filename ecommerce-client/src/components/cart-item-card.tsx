@@ -8,13 +8,15 @@ import type { CartItem } from "@/store/cart";
 
 interface CartItemCardProps {
   item: CartItem;
+  selected: boolean;
   onUpdateQuantity: (slug: string, qty: number) => void;
   onRemove: (slug: string, name: string) => void;
   onSave: (slug: string) => void;
+  onToggleSelect: (slug: string) => void;
   saved?: boolean;
 }
 
-export function CartItemCard({ item, onUpdateQuantity, onRemove, onSave, saved }: CartItemCardProps) {
+export function CartItemCard({ item, selected, onUpdateQuantity, onRemove, onSave, onToggleSelect, saved }: CartItemCardProps) {
   const { product, quantity } = item;
   const discount = product.price > product.finalPrice
     ? Math.round((1 - product.finalPrice / product.price) * 100)
@@ -27,8 +29,32 @@ export function CartItemCard({ item, onUpdateQuantity, onRemove, onSave, saved }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={{ type: "spring", stiffness: 380, damping: 30 }}
-      className="flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)] sm:gap-5"
+      className={`flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)] transition-all sm:gap-5 ${
+        selected ? "ring-2 ring-[#16815d]" : "ring-1 ring-slate-100"
+      }`}
     >
+      {/* Checkbox */}
+      <div className="flex items-start pt-1">
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={selected}
+          aria-label={`Select ${product.name}`}
+          onClick={() => onToggleSelect(product.slug)}
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16815d] focus-visible:ring-offset-2"
+          style={{
+            borderColor: selected ? "#16815d" : "#cbd5e1",
+            backgroundColor: selected ? "#16815d" : "white",
+          }}
+        >
+          {selected && (
+            <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+
       {/* Image */}
       <Link
         href={`/products/${product.slug}`}

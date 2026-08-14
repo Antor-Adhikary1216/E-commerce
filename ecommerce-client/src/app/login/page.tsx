@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
 import { getFirebaseAuth } from "@/lib/firebase";
-import { getAccessToken, setAccessToken } from "@/lib/token";
+import { setAccessToken } from "@/lib/token";
 import { useAuthUser } from "@/lib/use-auth-user";
 import { apiClient } from "@/services/api-client";
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
   const user = useAuthUser();
 
   useEffect(() => {
-    if (user && getAccessToken()) {
+    if (user) {
       const target = new URLSearchParams(window.location.search).get("redirect");
       const safeTarget = target && target.startsWith("/") && !target.startsWith("//") ? target : "/account";
       router.replace(safeTarget);

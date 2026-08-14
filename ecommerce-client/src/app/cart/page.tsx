@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ShoppingCart } from "lucide-react";
@@ -13,10 +13,11 @@ import { useRequireAuth } from "@/lib/use-require-auth";
 import { swal } from "@/lib/swal";
 
 export default function CartPage() {
-  const { items, count, subtotal, updateQuantity, remove, clear } = useCart();
+  const { items, count, updateQuantity, remove, clear } = useCart();
   const { toggle, isSaved } = useWishlist();
   const requireAuth = useRequireAuth();
   const router = useRouter();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     requireAuth();
@@ -27,6 +28,60 @@ export default function CartPage() {
       toast.error("Payment was cancelled. Your cart is still here.");
     }
   }, []);
+
+  // Auto-select all items on mount
+  useEffect(() => {
+    if (items.length > 0) {
+      setSelected((prev) => {
+        if (prev.size > 0) return prev;
+        return new Set(items.map((i) => i.product.slug));
+      });
+    }
+  }, [items]);
+
+  // Remove selected slugs that no longer exist in cart
+  useEffect(() => {
+    setSelected((prev) => {
+      if (prev.size === 0) return prev;
+      const slugs = new Set(items.map((i) => i.product.slug));
+      const filtered = new Set([...prev].filter((s) => slugs.has(s)));
+      return filtered.size === prev.size ? prev : filtered;
+    });
+  }, [items]);
+
+  const allSelected = items.length > 0 && items.every((i) => selected.has(i.product.slug));
+
+  const selectedItems = useMemo(
+    () => items.filter((i) => selected.has(i.product.slug)),
+    [items, selected]
+  );
+
+  const selectedSubtotal = useMemo(
+    () => selectedItems.reduce((sum, i) => sum + i.product.finalPrice * i.quantity, 0),
+    [selectedItems]
+  );
+
+  const selectedCount = useMemo(
+    () => selectedItems.reduce((sum, i) => sum + i.quantity, 0),
+    [selectedItems]
+  );
+
+  function toggleSelect(slug: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map((i) => i.product.slug)));
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -50,6 +105,11 @@ export default function CartPage() {
     });
     if (result.isConfirmed) {
       remove(slug);
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(slug);
+        return next;
+      });
       toast.success("Item removed from cart");
     }
   }
@@ -65,6 +125,7 @@ export default function CartPage() {
     });
     if (result.isConfirmed) {
       clear();
+      setSelected(new Set());
       toast.success("Cart cleared");
     }
   }
@@ -77,9 +138,14 @@ export default function CartPage() {
     toast.success(wasSaved ? "Removed from saved" : "Saved for later");
   }
 
-  function goToPlaceOrder() {
+  function goToCheckout() {
     if (!requireAuth()) return;
-    router.push("/place-order");
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one item.");
+      return;
+    }
+    const slugs = selectedItems.map((i) => i.product.slug).join(",");
+    router.push(`/checkout?items=${encodeURIComponent(slugs)}`);
   }
 
   return (
@@ -98,6 +164,32 @@ export default function CartPage() {
         </button>
       </div>
 
+      {/* Select All */}
+      <label className="mt-4 flex cursor-pointer items-center gap-2.5">
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={toggleAll}
+          className="peer sr-only"
+        />
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
+          style={{
+            borderColor: allSelected ? "#16815d" : "#cbd5e1",
+            backgroundColor: allSelected ? "#16815d" : "white",
+          }}
+        >
+          {allSelected && (
+            <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </span>
+        <span className="text-sm font-semibold text-[#1c2734]">
+          Select All ({count} item{count !== 1 ? "s" : ""})
+        </span>
+      </label>
+
       {/* Two-column layout */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         {/* Cart items */}
@@ -107,9 +199,11 @@ export default function CartPage() {
               <CartItemCard
                 key={item.product.slug}
                 item={item}
+                selected={selected.has(item.product.slug)}
                 onUpdateQuantity={updateQuantity}
                 onRemove={confirmRemove}
                 onSave={handleSave}
+                onToggleSelect={toggleSelect}
                 saved={isSaved(item.product.slug)}
               />
             ))}
@@ -119,10 +213,12 @@ export default function CartPage() {
         {/* Price details sidebar */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <PriceDetails
-            subtotal={subtotal}
-            itemCount={count}
-            onCheckout={goToPlaceOrder}
+            subtotal={selectedSubtotal}
+            itemCount={selectedCount}
+            onCheckout={goToCheckout}
             checkingOut={false}
+            selectedItems={selectedItems.length}
+            totalItems={count}
           />
         </div>
       </div>

@@ -3,8 +3,9 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { motion } from "framer-motion";
-import { ArrowLeft, ShieldCheck, ShoppingCart } from "lucide-react";
+import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ShieldCheck, ShoppingCart, MapPin, Pencil, Check, ChevronDown } from "lucide-react";
 import { INDIAN_STATES } from "@/constants/indian-states";
 import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -30,6 +31,19 @@ interface ShippingForm {
   country: string;
 }
 
+interface SavedAddress {
+  _id: string;
+  label?: string;
+  name?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+}
+
 const emptyForm: ShippingForm = {
   name: "",
   email: "",
@@ -49,12 +63,16 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const [form, setForm] = useState<ShippingForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
     requireAuth();
   }, [requireAuth]);
 
-  // Pre-fill name & email from Firebase auth, phone from profile API
+  // Fetch profile with addresses and pre-fill from Firebase auth
   useEffect(() => {
     const auth = getFirebaseAuth();
     if (!auth) return;
@@ -71,14 +89,66 @@ function CheckoutContent() {
       .get("/user/profile")
       .then(({ data }) => {
         const u = data.user;
-        setForm((f) => ({
-          ...f,
-          phone: u?.phone ?? f.phone,
-        }));
+        const addrs: SavedAddress[] = u?.addresses ?? [];
+        setSavedAddresses(addrs);
+        if (addrs.length > 0) {
+          setSelectedAddressId(addrs[0]._id);
+          const addr = addrs[0];
+          setForm((f) => ({
+            ...f,
+            name: addr.name || f.name,
+            phone: addr.phone || (u?.phone ?? f.phone),
+            line1: addr.line1 || "",
+            line2: addr.line2 || "",
+            city: addr.city || "",
+            state: addr.state || "",
+            postalCode: addr.postalCode || "",
+            country: addr.country || "India",
+          }));
+        } else {
+          setForm((f) => ({
+            ...f,
+            phone: u?.phone ?? f.phone,
+          }));
+        }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoadingProfile(false));
     return () => unsub();
   }, []);
+
+  function applyAddressToForm(addr: SavedAddress) {
+    setForm((prev) => ({
+      ...prev,
+      name: addr.name || prev.name,
+      phone: addr.phone || prev.phone,
+      line1: addr.line1 || "",
+      line2: addr.line2 || "",
+      city: addr.city || "",
+      state: addr.state || "",
+      postalCode: addr.postalCode || "",
+      country: addr.country || "India",
+    }));
+  }
+
+  function selectAddress(addr: SavedAddress) {
+    setSelectedAddressId(addr._id);
+    setEditingAddress(false);
+    applyAddressToForm(addr);
+  }
+
+  function handleEditAddress() {
+    setEditingAddress(true);
+    setSelectedAddressId(null);
+  }
+
+  function handleCancelEdit() {
+    if (savedAddresses.length > 0) {
+      setSelectedAddressId(savedAddresses[0]._id);
+      applyAddressToForm(savedAddresses[0]);
+      setEditingAddress(false);
+    }
+  }
 
   const itemSlugs = useMemo(() => {
     const raw = searchParams.get("items");
@@ -131,8 +201,11 @@ function CheckoutContent() {
       });
 
       window.location.href = data.url;
-    } catch {
-      toast.error("Could not start checkout. Please try again.");
+    } catch (err: unknown) {
+      const msg = axios.isAxiosError(err)
+        ? (err.response?.data as { message?: string })?.message ?? "Could not start checkout. Please try again."
+        : "Could not start checkout. Please try again.";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -149,14 +222,17 @@ function CheckoutContent() {
     );
   }
 
+  const hasSavedAddresses = savedAddresses.length > 0;
+  const showForm = !hasSavedAddresses || editingAddress;
+
   return (
     <main className="mx-auto max-w-[1240px] px-4 py-8">
       <Link
-        href="/place-order"
+        href="/cart"
         className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-[#1c2734]"
       >
         <ArrowLeft size={16} />
-        Back to item selection
+        Back to Cart
       </Link>
 
       <h1 className="mt-4 text-2xl font-black text-[#1c2734]">Shipping Details</h1>
@@ -164,7 +240,7 @@ function CheckoutContent() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         {/* Form */}
         <form id="checkout-form" onSubmit={handleSubmit} className="space-y-5">
-          {/* Contact */}
+          {/* Contact Information */}
           <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
             <h2 className="text-sm font-bold text-[#1c2734]">Contact Information</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -210,102 +286,205 @@ function CheckoutContent() {
             </label>
           </div>
 
-          {/* Address */}
+          {/* Shipping Address — Saved Addresses or Form */}
           <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
-            <h2 className="text-sm font-bold text-[#1c2734]">Shipping Address</h2>
-            <div className="mt-4 space-y-4">
-              <label className="block">
-                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Address Line 1 *
-                </span>
-                <input
-                  type="text"
-                  value={form.line1}
-                  onChange={(e) => update("line1", e.target.value)}
-                  placeholder="Street address, house number"
-                  className={inputClass}
-                  required
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Address Line 2
-                </span>
-                <input
-                  type="text"
-                  value={form.line2}
-                  onChange={(e) => update("line2", e.target.value)}
-                  placeholder="Apartment, suite, floor (optional)"
-                  className={inputClass}
-                />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    State *
-                  </span>
-                  <select
-                    value={form.state}
-                    onChange={(e) => {
-                      update("state", e.target.value);
-                      update("city", "");
-                    }}
-                    className={inputClass + " appearance-none"}
-                    required
-                  >
-                    <option value="">Select state</option>
-                    {INDIAN_STATES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    City *
-                  </span>
-                  <select
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    className={inputClass + " appearance-none"}
-                    required
-                    disabled={!form.state}
-                  >
-                    <option value="">{form.state ? "Select city" : "Select state first"}</option>
-                    {form.state && INDIAN_CITIES[form.state]?.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    Postal Code *
-                  </span>
-                  <input
-                    type="text"
-                    value={form.postalCode}
-                    onChange={(e) => update("postalCode", e.target.value)}
-                    placeholder="PIN code"
-                    className={inputClass}
-                    required
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    Country *
-                  </span>
-                  <input
-                    type="text"
-                    value={form.country}
-                    onChange={(e) => update("country", e.target.value)}
-                    placeholder="Country"
-                    className={inputClass}
-                    required
-                  />
-                </label>
-              </div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#1c2734]">Shipping Address</h2>
+              {hasSavedAddresses && !editingAddress && (
+                <button
+                  type="button"
+                  onClick={handleEditAddress}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#16815d] hover:underline"
+                >
+                  <Pencil size={14} />
+                  Edit address
+                </button>
+              )}
+              {editingAddress && savedAddresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 hover:underline"
+                >
+                  Use saved address
+                </button>
+              )}
             </div>
+
+            {/* Saved Addresses List */}
+            <AnimatePresence mode="wait">
+              {hasSavedAddresses && !editingAddress && (
+                <motion.div
+                  key="saved-addresses"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="mt-4 space-y-3"
+                >
+                  {savedAddresses.map((addr) => {
+                    const isSelected = selectedAddressId === addr._id;
+                    return (
+                      <button
+                        key={addr._id}
+                        type="button"
+                        onClick={() => selectAddress(addr)}
+                        className={`flex w-full items-start gap-3 rounded-xl border-2 p-4 text-left transition-all ${
+                          isSelected
+                            ? "border-[#16815d] bg-[#f0faf5]"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                            isSelected ? "bg-[#16815d] text-white" : "bg-[#e5ead9] text-[#16815d]"
+                          }`}
+                        >
+                          <MapPin size={16} />
+                        </div>
+                        <div className="min-w-0 flex-1 text-[13px]">
+                          <div className="flex items-center gap-2">
+                            {addr.label && (
+                              <span className="rounded-full bg-[#e5ead9] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#16815d]">
+                                {addr.label}
+                              </span>
+                            )}
+                            {isSelected && (
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-[#16815d]">
+                                <Check size={12} />
+                                Delivering here
+                              </span>
+                            )}
+                          </div>
+                          {addr.name && <p className="mt-1 font-semibold text-[#1c2734]">{addr.name}</p>}
+                          <p className="text-slate-500">{[addr.line1, addr.line2].filter(Boolean).join(", ")}</p>
+                          <p className="text-slate-500">{[addr.city, addr.state, addr.postalCode].filter(Boolean).join(", ")}</p>
+                          {addr.country && <p className="text-slate-500">{addr.country}</p>}
+                          {addr.phone && <p className="text-slate-500">{addr.phone}</p>}
+                        </div>
+                        <div className="shrink-0 pt-1">
+                          <span
+                            className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
+                              isSelected ? "border-[#16815d] bg-[#16815d]" : "border-slate-300"
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Address Form */}
+            <AnimatePresence mode="wait">
+              {showForm && (
+                <motion.div
+                  key="address-form"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="mt-4 space-y-4"
+                >
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      Address Line 1 *
+                    </span>
+                    <input
+                      type="text"
+                      value={form.line1}
+                      onChange={(e) => update("line1", e.target.value)}
+                      placeholder="Street address, house number"
+                      className={inputClass}
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      Address Line 2
+                    </span>
+                    <input
+                      type="text"
+                      value={form.line2}
+                      onChange={(e) => update("line2", e.target.value)}
+                      placeholder="Apartment, suite, floor (optional)"
+                      className={inputClass}
+                    />
+                  </label>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        State *
+                      </span>
+                      <select
+                        value={form.state}
+                        onChange={(e) => {
+                          update("state", e.target.value);
+                          update("city", "");
+                        }}
+                        className={inputClass + " appearance-none"}
+                        required
+                      >
+                        <option value="">Select state</option>
+                        {INDIAN_STATES.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        City *
+                      </span>
+                      <select
+                        value={form.city}
+                        onChange={(e) => update("city", e.target.value)}
+                        className={inputClass + " appearance-none"}
+                        required
+                        disabled={!form.state}
+                      >
+                        <option value="">{form.state ? "Select city" : "Select state first"}</option>
+                        {form.state && INDIAN_CITIES[form.state]?.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Postal Code *
+                      </span>
+                      <input
+                        type="text"
+                        value={form.postalCode}
+                        onChange={(e) => update("postalCode", e.target.value)}
+                        placeholder="PIN code"
+                        className={inputClass}
+                        required
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Country *
+                      </span>
+                      <input
+                        type="text"
+                        value={form.country}
+                        onChange={(e) => update("country", e.target.value)}
+                        placeholder="Country"
+                        className={inputClass}
+                        required
+                      />
+                    </label>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Mobile submit button */}

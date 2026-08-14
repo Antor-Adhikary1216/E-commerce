@@ -5,6 +5,7 @@ import { getStripe } from "../config/stripe.js";
 import { ProductModel } from "../models/product.model.js";
 import { OrderModel } from "../models/order.model.js";
 import { ShippingDetailModel } from "../models/shipping-detail.model.js";
+import { UserModel } from "../models/user.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 const currency = "inr";
@@ -68,6 +69,37 @@ async function createShippingDetail(shippingAddress: any, userId: string): Promi
   return detail._id.toString();
 }
 
+async function saveAddressToProfile(userId: string, shippingAddress: any): Promise<void> {
+  if (!shippingAddress || !shippingAddress.line1 || !shippingAddress.city) return;
+
+  const user = await UserModel.findById(userId);
+  if (!user) return;
+
+  const duplicate = user.addresses.some(
+    (a) =>
+      a.line1 === shippingAddress.line1 &&
+      a.line2 === (shippingAddress.line2 ?? "") &&
+      a.city === shippingAddress.city &&
+      a.state === shippingAddress.state &&
+      a.postalCode === shippingAddress.postalCode &&
+      a.country === (shippingAddress.country ?? "India"),
+  );
+  if (duplicate) return;
+
+  user.addresses.push({
+    label: "",
+    name: shippingAddress.name ?? "",
+    line1: shippingAddress.line1 ?? "",
+    line2: shippingAddress.line2 ?? "",
+    city: shippingAddress.city ?? "",
+    state: shippingAddress.state ?? "",
+    postalCode: shippingAddress.postalCode ?? "",
+    country: shippingAddress.country ?? "India",
+    phone: shippingAddress.phone ?? "",
+  });
+  await user.save();
+}
+
 // ─── Stripe Checkout ────────────────────────────────────────────
 export async function createStripeCheckout(req: AuthRequest, res: Response): Promise<Response> {
   const stripe = getStripe();
@@ -102,6 +134,8 @@ export async function createStripeCheckout(req: AuthRequest, res: Response): Pro
     if (shippingDetailId) {
       await ShippingDetailModel.updateOne({ _id: shippingDetailId }, { $set: { order: order._id } });
     }
+
+    saveAddressToProfile(req.auth!.userId, shippingAddress).catch(() => {});
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
