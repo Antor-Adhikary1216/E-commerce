@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ShieldCheck, ShoppingCart, MapPin, Pencil, Check, ChevronDown } from "lucide-react";
+import { ArrowLeft, ShieldCheck, ShoppingCart, MapPin, Pencil, Check, ChevronDown, CreditCard, Banknote } from "lucide-react";
 import { INDIAN_STATES } from "@/constants/indian-states";
 import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -67,6 +67,7 @@ function CheckoutContent() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [editingAddress, setEditingAddress] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "cod">("stripe");
 
   useEffect(() => {
     requireAuth();
@@ -185,22 +186,40 @@ function CheckoutContent() {
 
     setSubmitting(true);
     try {
-      const { data } = await apiClient.post("/payments/create-checkout", {
-        items: selectedItems.map((i) => ({ slug: i.product.slug, quantity: i.quantity })),
-        shippingAddress: {
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-          line1: form.line1,
-          line2: form.line2,
-          city: form.city,
-          state: form.state,
-          postalCode: form.postalCode,
-          country: form.country,
-        },
-      });
-
-      window.location.href = data.url;
+      if (paymentMethod === "cod") {
+        const { data } = await apiClient.post("/payments/create-cod", {
+          items: selectedItems.map((i) => ({ slug: i.product.slug, quantity: i.quantity })),
+          shippingAddress: {
+            name: form.name,
+            phone: form.phone,
+            email: form.email,
+            line1: form.line1,
+            line2: form.line2,
+            city: form.city,
+            state: form.state,
+            postalCode: form.postalCode,
+            country: form.country,
+          },
+        });
+        toast.success("Order placed successfully with Cash on Delivery!");
+        router.push(`/checkout/success?order_number=${data.orderNumber}`);
+      } else {
+        const { data } = await apiClient.post("/payments/create-checkout", {
+          items: selectedItems.map((i) => ({ slug: i.product.slug, quantity: i.quantity })),
+          shippingAddress: {
+            name: form.name,
+            phone: form.phone,
+            email: form.email,
+            line1: form.line1,
+            line2: form.line2,
+            city: form.city,
+            state: form.state,
+            postalCode: form.postalCode,
+            country: form.country,
+          },
+        });
+        window.location.href = data.url;
+      }
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
         ? (err.response?.data as { message?: string })?.message ?? "Could not start checkout. Please try again."
@@ -487,6 +506,82 @@ function CheckoutContent() {
             </AnimatePresence>
           </div>
 
+          {/* Payment Method */}
+          <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
+            <h2 className="text-sm font-bold text-[#1c2734]">Payment Method</h2>
+            <div className="mt-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("stripe")}
+                className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
+                  paymentMethod === "stripe"
+                    ? "border-[#16815d] bg-[#f0faf5]"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                    paymentMethod === "stripe" ? "bg-[#16815d] text-white" : "bg-[#e5ead9] text-[#16815d]"
+                  }`}
+                >
+                  <CreditCard size={16} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[#1c2734]">Online Payment</p>
+                  <p className="text-[12px] text-slate-500">Pay securely with UPI, Cards, or Net Banking</p>
+                </div>
+                <div className="shrink-0 pt-1">
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
+                      paymentMethod === "stripe" ? "border-[#16815d] bg-[#16815d]" : "border-slate-300"
+                    }`}
+                  >
+                    {paymentMethod === "stripe" && (
+                      <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("cod")}
+                className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
+                  paymentMethod === "cod"
+                    ? "border-[#16815d] bg-[#f0faf5]"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                    paymentMethod === "cod" ? "bg-[#16815d] text-white" : "bg-[#e5ead9] text-[#16815d]"
+                  }`}
+                >
+                  <Banknote size={16} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[#1c2734]">Cash on Delivery</p>
+                  <p className="text-[12px] text-slate-500">Pay when your order arrives</p>
+                </div>
+                <div className="shrink-0 pt-1">
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
+                      paymentMethod === "cod" ? "border-[#16815d] bg-[#16815d]" : "border-slate-300"
+                    }`}
+                  >
+                    {paymentMethod === "cod" && (
+                      <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Mobile submit button */}
           <motion.button
             type="submit"
@@ -501,7 +596,9 @@ function CheckoutContent() {
             ) : (
               <ShoppingCart size={17} className="shrink-0" />
             )}
-            <span className="leading-none">Checkout ({totalItems})</span>
+            <span className="leading-none">
+              {paymentMethod === "cod" ? "Place Order" : "Checkout"} ({totalItems})
+            </span>
           </motion.button>
         </form>
 
@@ -559,7 +656,9 @@ function CheckoutContent() {
               ) : (
                 <ShoppingCart size={17} className="shrink-0" />
               )}
-              <span className="leading-none">Checkout ({totalItems})</span>
+              <span className="leading-none">
+                {paymentMethod === "cod" ? "Place Order" : "Checkout"} ({totalItems})
+              </span>
             </motion.button>
 
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">

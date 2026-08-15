@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Package, ChevronRight } from "lucide-react";
-import { useRequireAuth } from "@/lib/use-require-auth";
+import { Package, ChevronRight, Trash2 } from "lucide-react";
 import { apiClient } from "@/services/api-client";
 import { currency } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -28,46 +27,52 @@ interface Order {
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  packed: "bg-indigo-100 text-indigo-700",
-  shipped: "bg-purple-100 text-purple-700",
-  out_for_delivery: "bg-orange-100 text-orange-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+  pending: "bg-[#fff7e6] text-[#d48806]",
+  confirmed: "bg-[#e6f7ff] text-[#0050b3]",
+  packed: "bg-[#f0f5ff] text-[#1d39c4]",
+  shipped: "bg-[#f9f0ff] text-[#531dab]",
+  out_for_delivery: "bg-[#fff7e6] text-[#d46b08]",
+  delivered: "bg-[#f6ffed] text-[#389e0d]",
+  cancelled: "bg-[#fff2f0] text-[#cf1322]",
 };
 
 export default function OrdersPage() {
-  const requireAuth = useRequireAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!requireAuth()) {
-      setLoading(false);
-      return;
-    }
     apiClient
       .get("/orders")
       .then(({ data }) => setOrders(data.orders))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [requireAuth]);
+  }, []);
+
+  async function handleDelete(orderId: string) {
+    setDeleting(true);
+    try {
+      await apiClient.delete(`/orders/${orderId}`);
+      setOrders((prev) => prev.filter((o) => o._id !== orderId));
+      setDeleteConfirm(null);
+    } catch {
+      // ignore
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-[1240px] px-4 py-10">
-        <Skeleton className="h-8 w-48" />
-        <div className="mt-6 space-y-3">
+      <main className="px-6 py-6">
+        <Skeleton className="h-7 w-40" />
+        <div className="mt-5 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)]">
-              <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+            <div key={i} className="flex items-center gap-3 rounded-lg border border-[#f0f0f0] bg-[#fafafb] p-4">
+              <Skeleton className="h-10 w-10 shrink-0 rounded" />
               <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                </div>
-                <Skeleton className="h-3 w-40" />
+                <Skeleton className="h-3.5 w-24" />
                 <Skeleton className="h-3 w-32" />
               </div>
             </div>
@@ -89,36 +94,78 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1240px] px-4 py-10">
-      <h1 className="text-2xl font-black">My orders</h1>
-      <div className="mt-6 space-y-3">
+    <main className="px-6 py-6">
+      <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">My Orders</h1>
+      <p className="mt-1 text-[13px] leading-[20px] text-[#8c8c8c]">View and manage your orders</p>
+      
+      <div className="mt-5 space-y-3">
         {orders.map((order) => (
-          <Link
+          <div
             key={order._id}
-            href={`/account/orders/${order._id}`}
-            className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,.12)] transition hover:shadow-md"
+            className="flex items-center gap-3 rounded-lg border border-[#f0f0f0] bg-[#fafafb] p-4 transition-colors duration-225 hover:bg-[#f5f5f5]"
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e5ead9] text-[#16815d]">
-              <Package size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold">{order.orderNumber}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${statusColors[order.status] ?? "bg-slate-100 text-slate-600"}`}>
-                  {order.status.replace(/_/g, " ")}
-                </span>
+            <Link href={`/account/orders/${order._id}`} className="flex flex-1 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#e6f7ff] text-[#1677ff]">
+                <Package size={18} />
               </div>
-              <p className="mt-0.5 text-[13px] text-slate-500">
-                {order.items.length} item{order.items.length > 1 ? "s" : ""} &middot; {currency(order.total)}
-              </p>
-              <p className="text-[11px] text-slate-400">
-                {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              </p>
-            </div>
-            <ChevronRight size={18} className="shrink-0 text-slate-300" />
-          </Link>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[14px] font-medium text-[#262626]">{order.orderNumber}</span>
+                  <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium capitalize ${statusColors[order.status] ?? "bg-[#f5f5f5] text-[#8c8c8c]"}`}>
+                    {order.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[13px] leading-[20px] text-[#8c8c8c]">
+                  {order.items.length} item{order.items.length > 1 ? "s" : ""} &middot; {currency(order.total)}
+                </p>
+                <p className="text-[12px] leading-[18px] text-[#8c8c8c]">
+                  {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </p>
+              </div>
+              <ChevronRight size={16} className="shrink-0 text-[#8c8c8c]" />
+            </Link>
+            
+            {/* Delete Button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setDeleteConfirm(order._id);
+              }}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#8c8c8c] transition-colors duration-150 hover:bg-[#fff2f0] hover:text-[#cf1322]"
+              aria-label="Delete order"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+            <h3 className="text-[16px] font-semibold text-[#262626]">Delete Order</h3>
+            <p className="mt-2 text-[14px] text-[#8c8c8c]">
+              Are you sure you want to delete this order? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="rounded-lg border border-[#f0f0f0] bg-[#fafafb] px-4 py-2 text-[14px] font-medium text-[#262626] transition-colors duration-225 hover:bg-[#f5f5f5]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                disabled={deleting}
+                className="rounded-lg bg-[#ff3b30] px-4 py-2 text-[14px] font-medium text-white transition-colors duration-225 hover:bg-[#ff453a] disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

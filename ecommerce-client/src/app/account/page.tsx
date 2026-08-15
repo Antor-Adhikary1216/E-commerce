@@ -457,18 +457,6 @@ export default function AccountPage() {
             ))}
           </div>
         </div>
-
-        {/* Actions Card */}
-        <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] sm:p-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/account/orders" className="inline-flex items-center gap-1.5 rounded-full bg-[#16815d] px-5 py-2.5 text-xs font-semibold text-white">
-              <Package size={14} /> My orders
-            </Link>
-            <button onClick={handleSignOut} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-5 py-2.5 text-xs font-semibold hover:bg-slate-50">
-              <LogOut size={14} /> Sign out
-            </button>
-          </div>
-        </div>
       </div>
     </main>
   );

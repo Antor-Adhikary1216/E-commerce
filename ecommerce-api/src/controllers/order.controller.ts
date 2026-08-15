@@ -48,3 +48,44 @@ export async function getOrderShippingDetail(req: AuthRequest, res: Response): P
   if (!detail) return res.status(404).json({ message: "Shipping details not found" });
   return res.json({ shippingDetail: detail });
 }
+
+export async function deleteOrder(req: AuthRequest, res: Response): Promise<Response> {
+  const order = await OrderModel.findOneAndDelete({
+    _id: req.params.id,
+    user: req.auth!.userId,
+  });
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  
+  await ShippingDetailModel.deleteMany({ order: req.params.id });
+  
+  return res.json({ message: "Order deleted successfully" });
+}
+
+export async function trackOrder(req: AuthRequest, res: Response): Promise<Response> {
+  const { orderNumber } = req.params;
+  if (!orderNumber) return res.status(400).json({ message: "Order number is required" });
+  
+  const order = await OrderModel.findOne({ 
+    orderNumber: orderNumber.toUpperCase(),
+    user: req.auth!.userId 
+  }).populate("shippingDetail").lean();
+  
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  
+  const trackingSteps = [
+    { status: "pending", label: "Order Placed", completed: true },
+    { status: "confirmed", label: "Confirmed", completed: ["confirmed", "packed", "shipped", "out_for_delivery", "delivered"].includes(order.status) },
+    { status: "packed", label: "Packed", completed: ["packed", "shipped", "out_for_delivery", "delivered"].includes(order.status) },
+    { status: "shipped", label: "Shipped", completed: ["shipped", "out_for_delivery", "delivered"].includes(order.status) },
+    { status: "out_for_delivery", label: "Out for Delivery", completed: ["out_for_delivery", "delivered"].includes(order.status) },
+    { status: "delivered", label: "Delivered", completed: order.status === "delivered" },
+  ];
+  
+  if (order.status === "cancelled") {
+    trackingSteps.forEach(step => {
+      step.completed = step.status === "pending";
+    });
+  }
+  
+  return res.json({ order, trackingSteps });
+}

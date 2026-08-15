@@ -205,3 +205,47 @@ export async function createCheckout(req: AuthRequest, res: Response): Promise<R
 export async function handleWebhook(req: Request, res: Response): Promise<Response> {
   return handleStripeWebhook(req, res);
 }
+
+// ─── Cash on Delivery ───────────────────────────────────────────
+export async function createCODOrder(req: AuthRequest, res: Response): Promise<Response> {
+  const rawItems = Array.isArray(req.body?.items) ? req.body.items : null;
+  if (!rawItems || rawItems.length === 0) return res.status(422).json({ message: "Items are required" });
+
+  try {
+    const { items, bySlug } = await resolveItems(rawItems);
+    const orderItems = buildOrderItems(items, bySlug);
+    const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const shippingAddress = req.body?.shippingAddress ?? null;
+    const shippingDetailId = await createShippingDetail(shippingAddress, req.auth!.userId);
+
+    const order = await OrderModel.create({
+      orderNumber: orderNumber(),
+      user: req.auth!.userId,
+      items: orderItems,
+      status: "confirmed",
+      paymentMethod: "cod",
+      paymentStatus: "pending",
+      shippingDetail: shippingDetailId,
+      shippingAddress,
+      subtotal,
+      discount: 0,
+      shippingCost: 0,
+      tax: 0,
+      total: subtotal,
+    });
+
+    if (shippingDetailId) {
+      await ShippingDetailModel.updateOne({ _id: shippingDetailId }, { $set: { order: order._id } });
+    }
+
+    saveAddressToProfile(req.auth!.userId, shippingAddress).catch(() => {});
+
+    return res.json({ 
+      orderNumber: order.orderNumber, 
+      message: "Order placed successfully with Cash on Delivery",
+      orderId: order._id
+    });
+  } catch (err: any) {
+    return res.status(400).json({ message: err.message || "Checkout failed" });
+  }
+}

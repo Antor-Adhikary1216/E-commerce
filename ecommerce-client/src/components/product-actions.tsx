@@ -37,6 +37,9 @@ export function ProductActions({ product }: { product: CatalogProduct }) {
 
   function handleBuyNow() {
     if (!requireAuth()) return;
+    if (!inCart) {
+      add(toCard(product));
+    }
     router.push(`/checkout?items=${encodeURIComponent(product.slug)}`);
   }
 
