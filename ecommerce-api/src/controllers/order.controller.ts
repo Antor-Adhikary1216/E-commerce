@@ -62,7 +62,7 @@ export async function deleteOrder(req: AuthRequest, res: Response): Promise<Resp
 }
 
 export async function trackOrder(req: AuthRequest, res: Response): Promise<Response> {
-  const { orderNumber } = req.params;
+  const orderNumber = String(req.params.orderNumber ?? "");
   if (!orderNumber) return res.status(400).json({ message: "Order number is required" });
   
   const order = await OrderModel.findOne({ 
