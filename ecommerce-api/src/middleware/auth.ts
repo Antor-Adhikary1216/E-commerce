@@ -1,1 +1,33 @@
-import type { NextFunction,Request,Response } from "express"; import { verifyAccess } from "../utils/tokens.js"; export interface AuthRequest extends Request { auth?:{userId:string;email:string;role:string} } export function requireAuth(req:AuthRequest,res:Response,next:NextFunction){try{const token=req.headers.authorization?.replace("Bearer ",""); if(!token)return res.status(401).json({message:"Authentication required"});const c=verifyAccess(token);req.auth={userId:c.sub,email:c.email,role:c.role};next();}catch{return res.status(401).json({message:"Invalid or expired access token"});}}
+import type { NextFunction, Request, Response } from "express";
+import { verifyAccess } from "../utils/tokens.js";
+
+export interface AuthRequest extends Request {
+  auth?: { userId: string; email: string; role: string };
+}
+
+export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) return res.status(401).json({ message: "Authentication required" });
+    const c = verifyAccess(token);
+    req.auth = { userId: c.sub, email: c.email, role: c.role };
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired access token" });
+  }
+}
+
+export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) return res.status(401).json({ message: "Authentication required" });
+    const c = verifyAccess(token);
+    if (c.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    req.auth = { userId: c.sub, email: c.email, role: c.role };
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired access token" });
+  }
+}
