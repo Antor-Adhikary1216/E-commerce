@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { RotateCcw, ShieldCheck, Truck, Phone, Mail, MessageCircle } from "lucide-react";
 
 function LinkedinIcon({ className }: { className?: string }) {
   return (
@@ -114,29 +114,48 @@ export function SiteFooter() {
       </div>
 
       {/* Main footer columns */}
-      <div className="mx-auto grid max-w-[1360px] gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <h3 className="text-[11px] font-bold uppercase tracking-[.18em] text-white/50">About</h3>
-          <ul className="mt-3 space-y-2 text-[12px]">
-            {aboutLinks.map((link) => (
-              <li key={link.label}>
-                <Link href={link.href} className="text-white/70 transition hover:text-white">{link.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="mx-auto grid max-w-[1360px] gap-8 px-6 py-10 sm:grid-cols-2 lg:grid-cols-5">
+        <LinkColumn title="About" links={aboutLinks} />
         <LinkColumn title="Help" links={helpLinks} />
         <LinkColumn title="Policies" links={policyLinks} />
+        <LinkColumn title="Company" links={companyLinks} />
         <div>
-          <LinkColumn title="Company" links={companyLinks} />
-          <div className="mt-5">
-            <p className="text-[11px] font-bold uppercase tracking-[.18em] text-white/50">Mail Us</p>
-            <p className="mt-2 text-[12px] leading-5 text-white/60">
-              Shopping India Pvt. Ltd.<br />
-              Tech Park, Outer Ring Road,<br />
-              Bengaluru, Karnataka 560103
-            </p>
-          </div>
+          <h3 className="text-[11px] font-bold uppercase tracking-[.18em] text-white/50">Live Support</h3>
+          <ul className="mt-3 space-y-3 text-[12px]">
+            <li>
+              <a href="tel:18001234567" className="flex items-center gap-2.5 text-white/70 transition hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#d8ef72]">
+                  <Phone size={14} />
+                </span>
+                <div>
+                  <span className="block font-semibold text-white">1800-123-4567</span>
+                  <span className="text-[11px] text-white/40">Toll-free, 24/7</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="mailto:support@shoppingindia.in" className="flex items-center gap-2.5 text-white/70 transition hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#d8ef72]">
+                  <Mail size={14} />
+                </span>
+                <div>
+                  <span className="block font-semibold text-white">support@shoppingindia.in</span>
+                  <span className="text-[11px] text-white/40">We reply within 24 hrs</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <Link href="/support" className="flex items-center gap-2.5 text-white/70 transition hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#d8ef72]">
+                  <MessageCircle size={14} />
+                </span>
+                <div>
+                  <span className="block font-semibold text-white">Live Chat</span>
+                  <span className="text-[11px] text-white/40">Chat with our team</span>
+                </div>
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
 
