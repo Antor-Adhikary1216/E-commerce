@@ -82,11 +82,11 @@ export default function AdminDashboardPage() {
   return (
     <div>
       {/* Dashboard Header */}
-      <div>
-        <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">
+      <div className="rounded-xl bg-gradient-to-r from-[#1c2734] to-[#2a3a4e] p-6 text-white">
+        <h1 className="text-[24px] font-bold leading-[30px]">
           {getGreeting()}, {adminName}
         </h1>
-        <p className="mt-1 text-[13px] leading-[20px] text-[#8c8c8c]">Here's what's happening with your store today</p>
+        <p className="mt-1 text-[14px] text-white/60">Here's what's happening with your store today</p>
       </div>
 
       {/* Stats Cards */}
