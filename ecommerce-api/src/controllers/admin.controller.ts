@@ -1,4 +1,5 @@
 import type { Response } from "express";
+import { Types } from "mongoose";
 import { OrderModel } from "../models/order.model.js";
 import { UserModel } from "../models/user.model.js";
 import { ProductModel } from "../models/product.model.js";
@@ -255,7 +256,7 @@ export async function sendMessage(req: AuthRequest, res: Response): Promise<Resp
   conversation.messages.push(message);
   conversation.lastMessageAt = new Date();
   conversation.status = "waiting";
-  if (!conversation.admin) conversation.admin = req.auth!.userId;
+  if (!conversation.admin) conversation.admin = new Types.ObjectId(req.auth!.userId);
 
   await conversation.save();
 
