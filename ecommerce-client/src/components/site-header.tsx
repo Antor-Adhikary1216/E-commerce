@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingCart, Clock, X, ShieldCheck } from "lucide-react";
 import { MdDashboard } from "react-icons/md";
 import { useCart } from "@/store/cart";
@@ -20,6 +20,7 @@ export function SiteHeader() {
   const user = useAuthUser();
   const signedIn = Boolean(user);
   const router = useRouter();
+  const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -223,8 +224,13 @@ export function SiteHeader() {
             )}
 
             {signedIn && userRole === "admin" && (
-              <Link href="/admin/dashboard" aria-label="Admin Panel" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
-                <ShieldCheck size={22} />
+              <Link 
+                href={pathname.startsWith("/admin") ? "/account/dashboard" : "/admin/dashboard"} 
+                aria-label={pathname.startsWith("/admin") ? "Customer Panel" : "Admin Panel"} 
+                className="flex h-11 items-center justify-center gap-2 rounded-full bg-white/10 px-4 text-[13px] font-semibold text-white transition hover:bg-white/20"
+              >
+                {pathname.startsWith("/admin") ? <MdDashboard size={18} /> : <ShieldCheck size={18} />}
+                {pathname.startsWith("/admin") ? "Customer Panel" : "Admin Panel"}
               </Link>
             )}
 

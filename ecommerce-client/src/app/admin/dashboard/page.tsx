@@ -41,6 +41,7 @@ const statusColors: Record<string, string> = {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminName, setAdminName] = useState<string>("Admin");
 
   useEffect(() => {
     apiClient
@@ -48,7 +49,19 @@ export default function AdminDashboardPage() {
       .then(({ data }) => setStats(data))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    apiClient
+      .get("/user/profile")
+      .then(({ data }) => setAdminName(data.user?.name || "Admin"))
+      .catch(() => {});
   }, []);
+
+  function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }
 
   if (loading) {
     return (
@@ -67,9 +80,14 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-[20px] font-semibold text-[#262626]">Admin Dashboard</h1>
-      <p className="mt-1 text-[13px] text-[#8c8c8c]">Overview of your store performance</p>
+    <div>
+      {/* Dashboard Header */}
+      <div>
+        <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">
+          {getGreeting()}, {adminName}
+        </h1>
+        <p className="mt-1 text-[13px] leading-[20px] text-[#8c8c8c]">Here's what's happening with your store today</p>
+      </div>
 
       {/* Stats Cards */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

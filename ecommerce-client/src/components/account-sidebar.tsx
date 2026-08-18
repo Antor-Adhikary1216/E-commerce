@@ -101,24 +101,22 @@ export function AccountSidebar() {
                 </li>
               );
             })}
-            {userRole === "admin" && (
-              <li>
-                <Link
-                  href="/admin/dashboard"
-                  className={`flex items-center gap-3 rounded px-3 py-2.5 text-[14px] font-medium transition-colors duration-150 ${
-                    pathname.startsWith("/admin")
-                      ? "bg-[#f9f0ff] text-[#531dab]"
-                      : "text-[#262626] hover:bg-[#f5f5f5]"
-                  }`}
-                >
-                  <span className={pathname.startsWith("/admin") ? "text-[#531dab]" : "text-[#8c8c8c]"}>
-                    <ShieldCheck size={18} />
-                  </span>
-                  Admin Panel
-                  {pathname.startsWith("/admin") && <ChevronRight size={14} className="ml-auto text-[#531dab]" />}
-                </Link>
-              </li>
-            )}
+            <li>
+              <Link
+                href="/admin/dashboard"
+                className={`flex items-center gap-3 rounded px-3 py-2.5 text-[14px] font-medium transition-colors duration-150 ${
+                  pathname.startsWith("/admin")
+                    ? "bg-[#f9f0ff] text-[#531dab]"
+                    : "text-[#262626] hover:bg-[#f5f5f5]"
+                }`}
+              >
+                <span className={pathname.startsWith("/admin") ? "text-[#531dab]" : "text-[#8c8c8c]"}>
+                  <ShieldCheck size={18} />
+                </span>
+                Admin Panel
+                {pathname.startsWith("/admin") && <ChevronRight size={14} className="ml-auto text-[#531dab]" />}
+              </Link>
+            </li>
           </ul>
         </nav>
 

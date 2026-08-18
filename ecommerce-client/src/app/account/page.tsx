@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { LogOut, Package, UserRound, MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
+import { LogOut, Package, UserRound, MapPin, Plus, Pencil, Trash2, Check, ShieldCheck, ChevronRight } from "lucide-react";
 import { INDIAN_STATES } from "@/constants/indian-states";
 import { INDIAN_CITIES } from "@/constants/indian-cities";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -61,6 +61,7 @@ export default function AccountPage() {
   const [addingAddress, setAddingAddress] = useState(false);
   const [addressForm, setAddressForm] = useState<Omit<Address, "_id">>(emptyAddress);
   const [savingAddress, setSavingAddress] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -79,6 +80,7 @@ export default function AccountPage() {
     try {
       const { data } = await apiClient.get("/user/profile");
       setProfile(data.user);
+      setUserRole(data.user?.role || null);
     } catch {
       // ignore
     } finally {
@@ -344,6 +346,32 @@ export default function AccountPage() {
             </div>
           )}
         </div>
+
+        {/* Admin Panel Section */}
+        {userRole === "admin" && (
+          <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] sm:p-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Admin Panel</h2>
+            </div>
+            <div className="mt-5">
+              <Link
+                href="/admin/dashboard"
+                className="flex items-center justify-between rounded-lg border border-[#f0f0f0] bg-[#fafafb] p-4 transition-all duration-225 hover:border-[#1677ff] hover:bg-[#f5f5f5]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded bg-[#f9f0ff] text-[#531dab]">
+                    <ShieldCheck size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-medium leading-[22px] text-[#262626]">Admin Dashboard</p>
+                    <p className="text-[12px] leading-[18px] text-[#8c8c8c]">Manage products, orders, and users</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-[#8c8c8c]" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Addresses Card */}
         <div className="rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] sm:p-8">

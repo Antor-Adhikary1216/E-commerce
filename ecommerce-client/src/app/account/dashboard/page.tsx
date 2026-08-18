@@ -10,11 +10,13 @@ import {
   ChevronRight,
   CheckCircle2,
   XCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { apiClient } from "@/services/api-client";
-import { currency } from "@/lib/utils";
+import { currency, cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthUser } from "@/lib/use-auth-user";
 
 interface OrderItem {
   product: string;
@@ -77,13 +79,21 @@ const statusIcons: Record<string, React.ReactNode> = {
 };
 
 export default function DashboardPage() {
+  const user = useAuthUser();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasPurchases, setHasPurchases] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      apiClient.get("/user/profile").then(({ data }) => setUserRole(data.user?.role || null)).catch(() => {});
+    }
+  }, [user]);
 
   async function fetchDashboardData() {
     try {
@@ -211,7 +221,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className={cn("mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3", userRole === "admin" && "md:grid-cols-4")}>
         <Link
           href="/account/orders"
           className="flex items-center justify-between rounded-lg border border-[#f0f0f0] bg-[#fafafb] p-4 transition-all duration-225 hover:border-[#1677ff] hover:bg-[#f5f5f5]"
@@ -259,6 +269,24 @@ export default function DashboardPage() {
           </div>
           <ChevronRight size={16} className="text-[#8c8c8c]" />
         </Link>
+
+        {userRole === "admin" && (
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center justify-between rounded-lg border border-[#f0f0f0] bg-[#fafafb] p-4 transition-all duration-225 hover:border-[#1677ff] hover:bg-[#f5f5f5]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-[#f9f0ff] text-[#531dab]">
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <p className="text-[14px] font-medium leading-[22px] text-[#262626]">Admin Panel</p>
+                <p className="text-[12px] leading-[18px] text-[#8c8c8c]">Manage products, orders, and users</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-[#8c8c8c]" />
+          </Link>
+        )}
       </div>
 
       {/* Recent Orders */}

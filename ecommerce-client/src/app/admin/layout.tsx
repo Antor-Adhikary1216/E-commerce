@@ -56,7 +56,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen bg-[#f5f5f5]">
       <AdminSidebar />
       <main className="flex-1 overflow-y-auto">
-        {children}
+        <div className="border-b border-[#f0f0f0] bg-white px-6 py-4">
+          <h1 className="text-[20px] font-semibold text-[#262626]">Admin Panel</h1>
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
       </main>
     </div>
   );
