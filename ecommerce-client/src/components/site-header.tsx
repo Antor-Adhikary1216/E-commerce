@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Heart, Menu, Search, ShoppingCart, Clock, X, ShieldCheck } from "lucide-react";
+import { Heart, Menu, Search, ShoppingCart, Clock, X } from "lucide-react";
 import { MdDashboard } from "react-icons/md";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
@@ -21,15 +21,6 @@ export function SiteHeader() {
   const signedIn = Boolean(user);
   const router = useRouter();
   const pathname = usePathname();
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (signedIn) {
-      import("@/services/api-client").then(({ apiClient }) =>
-        apiClient.get("/user/profile").then(({ data }) => setUserRole(data.user?.role || null)).catch(() => {})
-      );
-    }
-  }, [signedIn]);
 
   const { history, add, remove, clear } = useSearchHistory();
   const [searchQuery, setSearchQuery] = useState("");
@@ -220,17 +211,6 @@ export function SiteHeader() {
             {signedIn && (
               <Link href="/account/dashboard" aria-label="Dashboard" className="flex h-11 w-11 items-center justify-center rounded-full bg-[#d8ef72] text-[#1c2734] transition hover:ring-2 hover:ring-white/20">
                 <MdDashboard size={22} />
-              </Link>
-            )}
-
-            {signedIn && userRole === "admin" && (
-              <Link 
-                href={pathname.startsWith("/admin") ? "/account/dashboard" : "/admin/dashboard"} 
-                aria-label={pathname.startsWith("/admin") ? "Customer Panel" : "Admin Panel"} 
-                className="flex h-11 items-center justify-center gap-2 rounded-full bg-white/10 px-4 text-[13px] font-semibold text-white transition hover:bg-white/20"
-              >
-                {pathname.startsWith("/admin") ? <MdDashboard size={18} /> : <ShieldCheck size={18} />}
-                {pathname.startsWith("/admin") ? "Customer Panel" : "Admin Panel"}
               </Link>
             )}
 

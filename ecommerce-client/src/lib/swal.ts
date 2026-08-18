@@ -51,3 +51,12 @@ export function duplicateItemConfirm(name: string) {
     cancelButtonText: "No, cancel",
   });
 }
+
+export function notAdminWarning() {
+  return swal.fire({
+    icon: "warning",
+    title: "Unauthorized Access",
+    text: "You do not have admin privileges to access the Admin Panel. Please contact an administrator if you believe this is a mistake.",
+    confirmButtonText: "Got it",
+  });
+}

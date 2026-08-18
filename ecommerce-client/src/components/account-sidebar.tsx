@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Package, 
@@ -15,6 +15,7 @@ import { useAuthUser } from "@/lib/use-auth-user";
 import { signOut } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { apiClient } from "@/services/api-client";
+import { notAdminWarning } from "@/lib/swal";
 import { useEffect, useState } from "react";
 
 interface NavItem {
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
 
 export function AccountSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const user = useAuthUser();
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -102,9 +104,15 @@ export function AccountSidebar() {
               );
             })}
             <li>
-              <Link
-                href="/admin/dashboard"
-                className={`flex items-center gap-3 rounded px-3 py-2.5 text-[14px] font-medium transition-colors duration-150 ${
+              <button
+                onClick={() => {
+                  if (userRole === "admin") {
+                    router.push("/admin/dashboard");
+                  } else {
+                    notAdminWarning();
+                  }
+                }}
+                className={`flex w-full items-center gap-3 rounded px-3 py-2.5 text-[14px] font-medium transition-colors duration-150 ${
                   pathname.startsWith("/admin")
                     ? "bg-[#f9f0ff] text-[#531dab]"
                     : "text-[#262626] hover:bg-[#f5f5f5]"
@@ -115,7 +123,7 @@ export function AccountSidebar() {
                 </span>
                 Admin Panel
                 {pathname.startsWith("/admin") && <ChevronRight size={14} className="ml-auto text-[#531dab]" />}
-              </Link>
+              </button>
             </li>
           </ul>
         </nav>

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
-import { FooterSubscribe } from "@/components/footer-subscribe";
 
 function LinkedinIcon({ className }: { className?: string }) {
   return (
@@ -140,9 +139,6 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-
-      {/* Newsletter */}
-      <FooterSubscribe />
 
       {/* Copyright */}
       <div className="border-t border-white/10">
