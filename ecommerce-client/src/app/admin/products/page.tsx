@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Package,
   Plus,
@@ -7,6 +8,8 @@ import {
   Trash2,
   Search,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { apiClient } from "@/services/api-client";
 import { currency } from "@/lib/utils";
@@ -27,12 +30,15 @@ interface Product {
   bestSeller: boolean;
 }
 
+const PER_PAGE = 12;
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchProducts();
@@ -41,7 +47,7 @@ export default function AdminProductsPage() {
   async function fetchProducts() {
     setLoading(true);
     try {
-      const { data } = await apiClient.get("/admin/products?limit=50");
+      const { data } = await apiClient.get("/admin/products?limit=200");
       setProducts(data.products || []);
     } catch {
       // ignore
@@ -70,6 +76,16 @@ export default function AdminProductsPage() {
       p.brand.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filteredProducts.length / PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (page - 1) * PER_PAGE,
+    page * PER_PAGE
+  );
+
+  if (page > 1 && paginatedProducts.length === 0) {
+    setPage(1);
+  }
+
   if (loading) {
     return (
       <div className="p-6">
@@ -95,58 +111,113 @@ export default function AdminProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[20px] font-semibold text-[#262626]">Products</h1>
-          <p className="mt-1 text-[13px] text-[#8c8c8c]">Manage your product inventory</p>
+          <p className="mt-1 text-[13px] text-[#8c8c8c]">
+            Manage your product inventory
+          </p>
         </div>
+        <Link
+          href="/admin/products/new"
+          className="flex items-center gap-2 rounded-lg bg-[#1677ff] px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#146ae0]"
+        >
+          <Plus size={16} />
+          Add Product
+        </Link>
       </div>
 
       {/* Search */}
       <div className="mt-5 flex gap-3">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c8c8c]" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c8c8c]"
+          />
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search products by name, SKU, or brand..."
             className="h-10 w-full rounded-lg border border-[#f0f0f0] bg-white pl-10 pr-4 text-[13px] text-[#262626] placeholder:text-[#8c8c8c] focus:border-[#1677ff] focus:outline-none"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c8c8c] hover:text-[#262626]">
+            <button
+              onClick={() => {
+                setSearch("");
+                setPage(1);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c8c8c] hover:text-[#262626]"
+            >
               <X size={14} />
             </button>
           )}
         </div>
       </div>
 
+      {/* Products count */}
+      <p className="mt-3 text-[12px] text-[#8c8c8c]">
+        Showing {filteredProducts.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}
+        –{Math.min(page * PER_PAGE, filteredProducts.length)} of{" "}
+        {filteredProducts.length} products
+      </p>
+
       {/* Products Table */}
-      <div className="mt-4 overflow-hidden rounded-lg border border-[#f0f0f0] bg-white">
+      <div className="mt-3 overflow-hidden rounded-lg border border-[#f0f0f0] bg-white">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#f0f0f0] bg-[#fafafb]">
-              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Product</th>
-              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">SKU</th>
-              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Price</th>
-              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Category</th>
-              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Actions</th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">
+                Product
+              </th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">
+                SKU
+              </th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">
+                Price
+              </th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">
+                Category
+              </th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product._id} className="border-b border-[#f0f0f0] last:border-0 hover:bg-[#fafafb]">
+            {paginatedProducts.map((product) => (
+              <tr
+                key={product._id}
+                className="border-b border-[#f0f0f0] last:border-0 hover:bg-[#fafafb]"
+              >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     {product.images[0] && (
-                      <img src={product.images[0]} alt="" className="h-10 w-10 rounded object-cover" />
+                      <img
+                        src={product.images[0]}
+                        alt=""
+                        className="h-10 w-10 rounded object-cover"
+                      />
                     )}
                     <div>
-                      <p className="text-[13px] font-medium text-[#262626]">{product.name}</p>
-                      <p className="text-[11px] text-[#8c8c8c]">{product.brand}</p>
+                      <p className="text-[13px] font-medium text-[#262626]">
+                        {product.name}
+                      </p>
+                      <p className="text-[11px] text-[#8c8c8c]">
+                        {product.brand}
+                      </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-[12px] text-[#8c8c8c]">{product.sku}</td>
-                <td className="px-4 py-3 text-[13px] text-[#262626]">{currency(product.finalPrice)}</td>
-                <td className="px-4 py-3 text-[12px] text-[#8c8c8c]">{product.category?.name || "-"}</td>
+                <td className="px-4 py-3 text-[12px] text-[#8c8c8c]">
+                  {product.sku}
+                </td>
+                <td className="px-4 py-3 text-[13px] text-[#262626]">
+                  {currency(product.finalPrice)}
+                </td>
+                <td className="px-4 py-3 text-[12px] text-[#8c8c8c]">
+                  {product.category?.name || "-"}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <button className="rounded p-1.5 text-[#8c8c8c] hover:bg-[#f5f5f5] hover:text-[#1677ff]">
@@ -162,9 +233,12 @@ export default function AdminProductsPage() {
                 </td>
               </tr>
             ))}
-            {filteredProducts.length === 0 && (
+            {paginatedProducts.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[13px] text-[#8c8c8c]">
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-[13px] text-[#8c8c8c]"
+                >
                   No products found
                 </td>
               </tr>
@@ -173,13 +247,67 @@ export default function AdminProductsPage() {
         </table>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-1">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#f0f0f0] bg-white text-[#8c8c8c] transition hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(
+              (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2
+            )
+            .reduce<(number | "ellipsis")[]>((acc, p, i, arr) => {
+              if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("ellipsis");
+              acc.push(p);
+              return acc;
+            }, [])
+            .map((item, i) =>
+              item === "ellipsis" ? (
+                <span
+                  key={`e${i}`}
+                  className="flex h-9 w-9 items-center justify-center text-[13px] text-[#8c8c8c]"
+                >
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={item}
+                  onClick={() => setPage(item)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-[13px] font-medium transition ${
+                    page === item
+                      ? "bg-[#1677ff] text-white"
+                      : "border border-[#f0f0f0] bg-white text-[#262626] hover:bg-[#f5f5f5]"
+                  }`}
+                >
+                  {item}
+                </button>
+              )
+            )}
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#f0f0f0] bg-white text-[#8c8c8c] transition hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
-            <h3 className="text-[16px] font-semibold text-[#262626]">Delete Product</h3>
+            <h3 className="text-[16px] font-semibold text-[#262626]">
+              Delete Product
+            </h3>
             <p className="mt-2 text-[14px] text-[#8c8c8c]">
-              Are you sure you want to delete this product? This action cannot be undone.
+              Are you sure you want to delete this product? This action cannot be
+              undone.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
