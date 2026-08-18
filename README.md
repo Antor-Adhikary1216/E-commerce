@@ -2,6 +2,31 @@
 
 A full-stack e-commerce platform with a Next.js storefront and Express API, powered by MongoDB Atlas, Firebase Auth, and Stripe payments.
 
+![Landing Page](https://ecommerce-client-sepia.vercel.app/og-image.png)
+
+**Live Demo:** [https://ecommerce-client-sepia.vercel.app](https://ecommerce-client-sepia.vercel.app)
+
+## Project Overview
+
+Vanta Commerce is a modern, production-ready e-commerce solution built for the Indian market. It features a sleek dark-nav design with warm canvas tones and lime-green accents, delivering a premium shopping experience across all devices.
+
+### Key Highlights
+
+- **117+ products** seeded across 25 categories — Mobiles, Laptops, Headphones, Sneakers, Skincare, Furniture, Grocery, Fashion, and more
+- **Real-time product browsing** with category filters, text search, sort options, and paginated results
+- **Full checkout flow** with Stripe integration, order tracking with a 6-step progress tracker, and payment history
+- **Admin panel** with dashboard analytics, product management (CRUD with pagination), order management, user management, payment history, and live customer care chat
+- **Role-based access** — customers see a streamlined storefront, admins get a full management dashboard
+- **Responsive design** — works seamlessly on mobile, tablet, and desktop
+- **Firebase Authentication** with Google sign-in, email/password, and email OTP verification
+- **JWT-based auth** with automatic token refresh for uninterrupted sessions
+
+### Screenshots
+
+| Home Page | Product Detail | Admin Dashboard |
+|-----------|---------------|-----------------|
+| ![Home](https://ecommerce-client-sepia.vercel.app/og-image.png) | ![Product](https://ecommerce-client-sepia.vercel.app/og-image.png) | ![Admin](https://ecommerce-client-sepia.vercel.app/og-image.png) |
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -12,6 +37,8 @@ A full-stack e-commerce platform with a Next.js storefront and Express API, powe
 | Auth | Firebase Authentication + JWT access/refresh tokens |
 | Payments | Stripe Checkout Sessions + Webhooks |
 | State | React Context (localStorage cart/wishlist), TanStack Query |
+| Alerts | SweetAlert2, react-hot-toast |
+| Deployment | Vercel (Client + API) |
 
 ## Getting Started
 
@@ -74,6 +101,8 @@ npm run dev
 - Product detail pages with images, ratings, and pricing
 - Flash sale and new arrival sections
 - Responsive design with dark-nav, warm canvas, and lime-green accents
+- 8 quick-access category icons on the homepage
+- Hero banner with promotional deals
 
 ### Cart & Checkout
 - Add/remove items with confirmation dialogs
@@ -86,11 +115,27 @@ npm run dev
 - Order history page (`/account/orders`)
 - Order detail with 6-step progress tracker (`/account/orders/[id]`)
 - Order number displayed on checkout success
+- Track order page with real-time status
+
+### Admin Panel
+- Dashboard with sales stats, recent orders, and quick actions
+- Product management — list with pagination (12/page), search, create, edit, delete
+- Full product creation form with images, pricing, variants, and visibility flags
+- Order management with status updates
+- User management
+- Payment history
+- Live customer care chat
 
 ### Auth
 - Google and Email/Password sign-in via Firebase
 - Email OTP verification
 - JWT access token with auto-refresh interceptor
+- Role-based routing (admin vs customer)
+
+### Support
+- Help center with FAQ accordion
+- Contact cards (Email, Phone, Live Chat)
+- Browse topics with category cards
 
 ## API Endpoints
 
@@ -110,6 +155,13 @@ npm run dev
 | GET | `/orders` | Yes | List user orders |
 | GET | `/orders/:id` | Yes | Get order detail |
 | GET | `/orders/session/:sessionId` | Yes | Get order by Stripe session |
+| GET | `/admin/products` | Admin | List all products (admin) |
+| POST | `/admin/products` | Admin | Create product |
+| PUT | `/admin/products/:id` | Admin | Update product |
+| DELETE | `/admin/products/:id` | Admin | Delete product |
+| GET | `/admin/orders` | Admin | List all orders |
+| GET | `/admin/users` | Admin | List all users |
+| PUT | `/user/profile` | Yes | Update user profile |
 
 ## Project Structure
 
@@ -118,7 +170,19 @@ npm run dev
 ├── ecommerce-client/          # Next.js storefront
 │   └── src/
 │       ├── app/               # App Router pages
+│       │   ├── admin/         # Admin panel (dashboard, products, orders, users, payments, conversations)
+│       │   ├── account/       # Customer account (dashboard, orders, payments, tracking)
+│       │   ├── cart/          # Shopping cart
+│       │   ├── checkout/      # Checkout flow
+│       │   ├── products/      # Product detail pages
+│       │   ├── shop/          # Product catalog
+│       │   ├── sale/          # Flash sale items
+│       │   ├── search/        # Search results
+│       │   └── support/       # Help center
 │       ├── components/        # Reusable UI components
+│       │   ├── ui/            # Button, spinner, skeleton
+│       │   ├── motion/        # Framer Motion animations
+│       │   └── support/       # Support page components
 │       ├── lib/               # Firebase, auth hooks, helpers
 │       ├── providers/         # Context providers
 │       ├── services/          # Axios API client
@@ -131,7 +195,7 @@ npm run dev
 │       ├── middleware/         # Auth, error handling
 │       ├── models/            # Mongoose schemas
 │       ├── routes/            # Express routers
-│       ├── seeds/             # Catalog seeder (143 products)
+│       ├── seeds/             # Catalog seeder (117 products, 25 categories)
 │       ├── services/          # OTP, email
 │       └── utils/             # JWT helpers
 ```
