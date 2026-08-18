@@ -86,7 +86,7 @@ export default function AdminDashboardPage() {
         <h1 className="text-[24px] font-bold leading-[30px]">
           {getGreeting()}, {adminName}
         </h1>
-        <p className="mt-1 text-[14px] text-white/60">Here's what's happening with your store today</p>
+        <p className="mt-1 text-[14px] text-white/60">Here&apos;s what&apos;s happening with your store today</p>
       </div>
 
       {/* Stats Cards */}
