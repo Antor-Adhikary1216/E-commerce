@@ -2,6 +2,7 @@ import type { Response } from "express";
 import { OrderModel } from "../models/order.model.js";
 import { UserModel } from "../models/user.model.js";
 import { ProductModel } from "../models/product.model.js";
+import { ConversationModel } from "../models/conversation.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 // ─── Dashboard Stats ────────────────────────────────────────────
@@ -170,4 +171,113 @@ export async function updateUserRole(req: AuthRequest, res: Response): Promise<R
   const user = await UserModel.findByIdAndUpdate(req.params.id, { role }, { new: true }).select("-refreshTokenHash");
   if (!user) return res.status(404).json({ message: "User not found" });
   return res.json({ user });
+}
+
+// ─── Payment History ──────────────────────────────────────────────
+export async function listPayments(req: AuthRequest, res: Response): Promise<Response> {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const status = (req.query.status as string) || "";
+  const method = (req.query.method as string) || "";
+  const userId = (req.query.userId as string) || "";
+
+  const filter: any = {};
+  if (status) filter.paymentStatus = status;
+  if (method) filter.paymentMethod = method;
+  if (userId) filter.user = userId;
+
+  const [payments, total] = await Promise.all([
+    OrderModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "name email")
+      .lean(),
+    OrderModel.countDocuments(filter),
+  ]);
+
+  return res.json({ payments, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+}
+
+// ─── Customer Care / Conversations ────────────────────────────────
+export async function listConversations(req: AuthRequest, res: Response): Promise<Response> {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const status = (req.query.status as string) || "";
+
+  const filter: any = {};
+  if (status) filter.status = status;
+
+  const [conversations, total] = await Promise.all([
+    ConversationModel.find(filter)
+      .sort({ lastMessageAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "name email avatar")
+      .populate("admin", "name email")
+      .lean(),
+    ConversationModel.countDocuments(filter),
+  ]);
+
+  return res.json({ conversations, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+}
+
+export async function getConversation(req: AuthRequest, res: Response): Promise<Response> {
+  const conversation = await ConversationModel.findById(req.params.id)
+    .populate("user", "name email avatar")
+    .populate("admin", "name email")
+    .lean();
+
+  if (!conversation) return res.status(404).json({ message: "Conversation not found" });
+
+  return res.json({ conversation });
+}
+
+export async function sendMessage(req: AuthRequest, res: Response): Promise<Response> {
+  const { content } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ message: "Message content is required" });
+  }
+
+  const conversation = await ConversationModel.findById(req.params.id);
+  if (!conversation) return res.status(404).json({ message: "Conversation not found" });
+
+  const message = {
+    sender: req.auth!.userId,
+    content: content.trim(),
+    isAdmin: true,
+    read: false,
+    createdAt: new Date(),
+  };
+
+  conversation.messages.push(message);
+  conversation.lastMessageAt = new Date();
+  conversation.status = "waiting";
+  if (!conversation.admin) conversation.admin = req.auth!.userId;
+
+  await conversation.save();
+
+  await conversation.populate("user", "name email avatar");
+  await conversation.populate("admin", "name email");
+
+  return res.json({ conversation });
+}
+
+export async function updateConversationStatus(req: AuthRequest, res: Response): Promise<Response> {
+  const { status } = req.body;
+  if (!["open", "waiting", "closed"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
+  }
+
+  const conversation = await ConversationModel.findByIdAndUpdate(
+    req.params.id,
+    { status },
+    { new: true }
+  ).populate("user", "name email avatar");
+
+  if (!conversation) return res.status(404).json({ message: "Conversation not found" });
+
+  return res.json({ conversation });
 }

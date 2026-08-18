@@ -9,6 +9,8 @@ import {
   LogOut,
   ChevronRight,
   Store,
+  CreditCard,
+  MessageSquare,
 } from "lucide-react";
 import { useAuthUser } from "@/lib/use-auth-user";
 import { signOut } from "firebase/auth";
@@ -26,6 +28,8 @@ const navItems: NavItem[] = [
   { href: "/admin/products", label: "Products", icon: <Package size={18} /> },
   { href: "/admin/orders", label: "Orders", icon: <ShoppingCart size={18} /> },
   { href: "/admin/users", label: "Users", icon: <Users size={18} /> },
+  { href: "/admin/payments", label: "Payments", icon: <CreditCard size={18} /> },
+  { href: "/admin/conversations", label: "Customer Care", icon: <MessageSquare size={18} /> },
 ];
 
 export function AdminSidebar() {

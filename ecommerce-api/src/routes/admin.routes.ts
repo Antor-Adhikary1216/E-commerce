@@ -11,6 +11,11 @@ import {
   updateOrderStatus,
   listUsers,
   updateUserRole,
+  listPayments,
+  listConversations,
+  getConversation,
+  sendMessage,
+  updateConversationStatus,
 } from "../controllers/admin.controller.js";
 
 const router = Router();
@@ -35,5 +40,14 @@ router.put("/orders/:id/status", updateOrderStatus);
 // Users
 router.get("/users", listUsers);
 router.put("/users/:id/role", updateUserRole);
+
+// Payments
+router.get("/payments", listPayments);
+
+// Conversations / Customer Care
+router.get("/conversations", listConversations);
+router.get("/conversations/:id", getConversation);
+router.post("/conversations/:id/messages", sendMessage);
+router.put("/conversations/:id/status", updateConversationStatus);
 
 export default router;
