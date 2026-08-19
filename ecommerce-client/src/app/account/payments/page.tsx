@@ -95,7 +95,7 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <main className="px-6 py-6">
+      <main className="p-4 sm:px-6 py-6">
         <Skeleton className="h-7 w-40" />
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
@@ -133,7 +133,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <main className="px-6 py-6">
+    <main className="p-4 sm:px-6 py-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

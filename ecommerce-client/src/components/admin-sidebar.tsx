@@ -11,11 +11,14 @@ import {
   Store,
   CreditCard,
   MessageSquare,
+  Menu,
+  X
 } from "lucide-react";
 import { useAuthUser } from "@/lib/use-auth-user";
 import { signOut } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { apiClient } from "@/services/api-client";
+import { useEffect, useState } from "react";
 
 interface NavItem {
   href: string;
@@ -35,6 +38,11 @@ const navItems: NavItem[] = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const user = useAuthUser();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   async function handleSignOut() {
     const auth = getFirebaseAuth();
@@ -51,9 +59,9 @@ export function AdminSidebar() {
     window.location.href = "/";
   }
 
-  return (
-    <aside className="w-64 shrink-0 border-r border-[#f0f0f0] bg-[#1c2734]">
-      <div className="sticky top-0 flex h-screen flex-col">
+  function SidebarContent() {
+    return (
+      <>
         {/* Logo */}
         <div className="border-b border-white/10 p-5">
           <Link href="/admin/dashboard" className="flex items-center gap-3">
@@ -124,7 +132,44 @@ export function AdminSidebar() {
             Sign out
           </button>
         </div>
-      </div>
-    </aside>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {/* Mobile toggle button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed bottom-5 left-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#1c2734] text-white shadow-lg md:hidden"
+        aria-label="Open admin menu"
+      >
+        <Menu size={22} />
+      </button>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden w-64 shrink-0 border-r border-[#f0f0f0] bg-[#1c2734] md:block">
+        <div className="sticky top-0 flex h-screen flex-col">
+          <SidebarContent />
+        </div>
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <aside className="relative flex h-full w-72 flex-col bg-[#1c2734] shadow-xl">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-white/10"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

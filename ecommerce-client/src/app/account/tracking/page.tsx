@@ -107,7 +107,7 @@ export default function TrackingPage() {
   }
 
   return (
-    <main className="px-6 py-6">
+    <main className="p-4 sm:px-6 py-6">
       {/* Header */}
       <div>
         <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">Track Order</h1>

@@ -17,7 +17,7 @@ Vanta Commerce is a modern, production-ready e-commerce solution built for the I
 - **Full checkout flow** with Stripe integration, order tracking with a 6-step progress tracker, and payment history
 - **Admin panel** with dashboard analytics, product management (CRUD with pagination), order management, user management, payment history, and live customer care chat
 - **Role-based access** — customers see a streamlined storefront, admins get a full management dashboard
-- **Responsive design** — works seamlessly on mobile, tablet, and desktop
+- **Responsive design** — works seamlessly on mobile, tablet, and desktop with collapsible sidebars, responsive padding, and horizontal-scroll tables
 - **Firebase Authentication** with Google sign-in, email/password, and email OTP verification
 - **JWT-based auth** with automatic token refresh for uninterrupted sessions
 
@@ -103,6 +103,12 @@ npm run dev
 - Responsive design with dark-nav, warm canvas, and lime-green accents
 - 8 quick-access category icons on the homepage
 - Hero banner with promotional deals
+
+### Mobile Responsiveness
+- Collapsible sidebars for Account and Admin panels (hamburger toggle on small screens)
+- Responsive padding across all pages (smaller margins on mobile)
+- Horizontal-scroll tables for admin dashboards on narrow screens
+- Touch-friendly cart and checkout with mobile-optimized submit buttons
 
 ### Cart & Checkout
 - Add/remove items with confirmation dialogs

@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="px-6 py-6">
+      <main className="p-4 sm:px-6 py-6">
         <Skeleton className="h-7 w-40" />
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -162,7 +162,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="px-6 py-6">
+    <main className="p-4 sm:px-6 py-6">
       {/* Header */}
       <div>
         <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">Dashboard</h1>

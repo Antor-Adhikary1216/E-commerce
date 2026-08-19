@@ -55,17 +55,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-[#f5f5f5]">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-[#1c2734] px-8 py-5 flex items-center gap-4 shrink-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="bg-[#1c2734] px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-3 sm:gap-4 shrink-0">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#d8ef72] text-[#1c2734]">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
           <div>
-            <h1 className="text-[18px] font-bold text-white leading-tight">Admin Panel</h1>
-            <p className="text-[12px] text-white/50">Manage your store</p>
+            <h1 className="text-[16px] sm:text-[18px] font-bold text-white leading-tight">Admin Panel</h1>
+            <p className="text-[11px] sm:text-[12px] text-white/50">Manage your store</p>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>

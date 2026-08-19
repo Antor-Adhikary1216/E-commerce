@@ -155,7 +155,7 @@ export default function AdminConversationsPage() {
             ))}
           </div>
         </div>
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 sm:p-6">
           <Skeleton className="h-7 w-48" />
           <div className="mt-6 space-y-4">
             {[1, 2, 3].map((i) => (

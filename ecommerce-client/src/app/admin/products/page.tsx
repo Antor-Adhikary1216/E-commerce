@@ -88,7 +88,7 @@ export default function AdminProductsPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Skeleton className="h-7 w-48" />
         <div className="mt-6 space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -163,8 +163,8 @@ export default function AdminProductsPage() {
       </p>
 
       {/* Products Table */}
-      <div className="mt-3 overflow-hidden rounded-lg border border-[#f0f0f0] bg-white">
-        <table className="w-full">
+      <div className="mt-3 overflow-x-auto rounded-lg border border-[#f0f0f0] bg-white">
+        <table className="w-full min-w-[700px]">
           <thead>
             <tr className="border-b border-[#f0f0f0] bg-[#fafafb]">
               <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">

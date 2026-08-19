@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Skeleton className="h-7 w-48" />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -217,8 +217,8 @@ export default function AdminDashboardPage() {
               View all
             </Link>
           </div>
-          <div className="mt-4 overflow-hidden rounded-lg border border-[#f0f0f0] bg-white">
-            <table className="w-full">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-[#f0f0f0] bg-white">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-[#f0f0f0] bg-[#fafafb]">
                   <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Order</th>

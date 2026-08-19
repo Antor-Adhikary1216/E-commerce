@@ -65,7 +65,7 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <main className="px-6 py-6">
+      <main className="p-4 sm:px-6 py-6">
         <Skeleton className="h-7 w-40" />
         <div className="mt-5 space-y-3">
           {[1, 2, 3].map((i) => (
@@ -94,7 +94,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="px-6 py-6">
+    <main className="p-4 sm:px-6 py-6">
       <h1 className="text-[20px] font-semibold leading-[26px] text-[#262626]">My Orders</h1>
       <p className="mt-1 text-[13px] leading-[20px] text-[#8c8c8c]">View and manage your orders</p>
       

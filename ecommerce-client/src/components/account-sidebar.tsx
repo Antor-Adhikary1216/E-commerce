@@ -9,7 +9,9 @@ import {
   LogOut,
   ChevronRight,
   Truck,
-  ShieldCheck
+  ShieldCheck,
+  Menu,
+  X
 } from "lucide-react";
 import { useAuthUser } from "@/lib/use-auth-user";
 import { signOut } from "firebase/auth";
@@ -37,12 +39,17 @@ export function AccountSidebar() {
   const router = useRouter();
   const user = useAuthUser();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       apiClient.get("/user/profile").then(({ data }) => setUserRole(data.user?.role || null)).catch(() => {});
     }
   }, [user]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   async function handleSignOut() {
     const auth = getFirebaseAuth();
@@ -59,9 +66,9 @@ export function AccountSidebar() {
     window.location.href = "/";
   }
 
-  return (
-    <aside className="w-64 shrink-0 border-r border-[#f0f0f0] bg-[#fafafb]">
-      <div className="sticky top-0 flex h-screen flex-col">
+  function SidebarContent() {
+    return (
+      <>
         {/* User Info */}
         <div className="border-b border-[#f0f0f0] p-5">
           <div className="flex items-center gap-3">
@@ -138,7 +145,44 @@ export function AccountSidebar() {
             Sign out
           </button>
         </div>
-      </div>
-    </aside>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {/* Mobile toggle button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed bottom-5 left-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#1677ff] text-white shadow-lg md:hidden"
+        aria-label="Open menu"
+      >
+        <Menu size={22} />
+      </button>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden w-64 shrink-0 border-r border-[#f0f0f0] bg-[#fafafb] md:block">
+        <div className="sticky top-0 flex h-screen flex-col">
+          <SidebarContent />
+        </div>
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <aside className="relative flex h-full w-72 flex-col bg-[#fafafb] shadow-xl">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-[#8c8c8c] hover:bg-[#f5f5f5]"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

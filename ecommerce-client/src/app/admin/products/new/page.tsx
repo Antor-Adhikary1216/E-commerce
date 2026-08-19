@@ -147,7 +147,7 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-3xl p-4 sm:p-6">
       <Link
         href="/admin/products"
         className="mb-6 inline-flex items-center gap-2 text-[13px] font-medium text-[#8c8c8c] transition hover:text-[#262626]"

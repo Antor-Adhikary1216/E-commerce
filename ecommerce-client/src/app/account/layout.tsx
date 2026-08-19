@@ -7,7 +7,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
     <AuthRequired>
       <div className="flex min-h-[calc(100vh-64px)]">
         <AccountSidebar />
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-white">
           {children}
         </main>
       </div>
