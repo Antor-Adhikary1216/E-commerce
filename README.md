@@ -1,4 +1,4 @@
-# Vanta Commerce
+#shoping india
 
 A full-stack e-commerce platform with a Next.js storefront and Express API, powered by MongoDB Atlas, Firebase Auth, and Stripe payments.
 
