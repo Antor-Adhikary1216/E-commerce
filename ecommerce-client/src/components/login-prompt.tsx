@@ -12,7 +12,7 @@ import { setAccessToken } from "@/lib/token";
 import { apiClient } from "@/services/api-client";
 import { EASE } from "@/components/motion/reveal";
 
-const DISMISS_KEY = "vanta-login-prompt-dismissed";
+const DISMISS_KEY = "shopping-in-india-login-prompt-dismissed";
 
 const benefits = [
   { icon: ShoppingBag, text: "Save items to your wishlist" },
@@ -94,7 +94,7 @@ export function LoginPrompt() {
             </div>
 
             <h2 id="login-prompt-title" className="mt-4 text-lg font-bold">
-              Sign in to Vanta
+              Sign in to Shopping in India.in
             </h2>
             <p className="mt-1.5 text-[13px] leading-6 text-slate-500">
               Create a free account to unlock these benefits:

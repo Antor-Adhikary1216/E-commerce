@@ -16,5 +16,10 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     console.log(`[dev] Email to ${to} — ${subject}\n${html}`);
     return;
   }
-  await transporter.sendMail({ from: env.SMTP_FROM ?? env.SMTP_USER, to, subject, html });
+  try {
+    await transporter.sendMail({ from: env.SMTP_FROM ?? env.SMTP_USER, to, subject, html });
+  } catch (err) {
+    console.error(`[email] Failed to send to ${to}:`, err);
+    throw err;
+  }
 }

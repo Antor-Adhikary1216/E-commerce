@@ -32,7 +32,14 @@ app.use((req, _, next) => {
   next();
 });
 app.get("/health", (_, res) => res.json({ status: "ok" }));
-app.use("/api/v1/auth", authRoutes);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: 15,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many requests. Please try again later." },
+});
+app.use("/api/v1/auth", authLimiter, authRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/payments", paymentRoutes);

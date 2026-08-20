@@ -17,11 +17,18 @@ const errorMessages: Record<string, string> = {
   "auth/invalid-credential": "Incorrect email or password.",
   "auth/user-not-found": "No account found with that email.",
   "auth/wrong-password": "Incorrect password.",
-  "auth/email-already-in-use": "An account already exists for that email.",
+  "auth/email-already-in-use": "An account already exists with this email. Try signing in instead.",
   "auth/weak-password": "Password should be at least 6 characters.",
-  "auth/popup-closed-by-user": "Sign-in was cancelled.",
+  "auth/invalid-email": "Please enter a valid email address.",
+  "auth/operation-not-allowed": "Email/password sign-up is not enabled. Please contact support.",
+  "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
+  "auth/user-disabled": "This account has been disabled. Please contact support.",
   "auth/network-request-failed": "Network error. Check your connection.",
   "auth/invalid-api-key": "Firebase isn't configured. Add the Firebase keys to ecommerce-client/.env.local.",
+  "auth/popup-closed-by-user": "Sign-in was cancelled.",
+  "auth/popup-blocked": "Pop-up was blocked by your browser. Please allow pop-ups for this site.",
+  "auth/cancelled-popup-request": "Sign-in was cancelled.",
+  "auth/account-exists-with-different-credential": "An account already exists with this email using a different sign-in method.",
 };
 
 const inputClass =
@@ -36,10 +43,13 @@ function formatError(error: unknown): string {
     const data = error.response?.data as { message?: string } | undefined;
     if (data?.message) return data.message;
     if (!error.response) return "Could not reach the server. Check your connection and try again.";
+    return `Server error (${error.response.status}). Please try again.`;
   }
-  const code = (error as { code?: string }).code ?? "";
-  if (code) return messageFor(code);
+  if (error && typeof error === "object" && "code" in error && typeof (error as { code?: unknown }).code === "string") {
+    return messageFor((error as { code: string }).code);
+  }
   if (error instanceof Error && error.message) return error.message;
+  console.error("Unexpected error:", error);
   return "Something went wrong. Please try again.";
 }
 
@@ -59,16 +69,9 @@ export default function LoginPage() {
   const [verifyingEmail, setVerifyingEmail] = useState("");
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const user = useAuthUser();
-
-  useEffect(() => {
-    if (user) {
-      const target = new URLSearchParams(window.location.search).get("redirect");
-      const safeTarget = target && target.startsWith("/") && !target.startsWith("//") ? target : "/account";
-      router.replace(safeTarget);
-    }
-  }, [user, router]);
 
   async function exchange() {
     const auth = getFirebaseAuth();
@@ -95,6 +98,10 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!termsAccepted) {
+      toast.error("Please accept the Terms & Conditions to continue.");
+      return;
+    }
     const auth: Auth | null = getFirebaseAuth();
     if (!auth) {
       toast.error("Firebase isn't configured. Add the Firebase keys to ecommerce-client/.env.local.");
@@ -105,8 +112,17 @@ export default function LoginPage() {
       if (mode === "signin") {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
-        if (name.trim()) await updateProfile(credential.user, { displayName: name.trim() });
+        try {
+          const credential = await createUserWithEmailAndPassword(auth, email, password);
+          if (name.trim()) await updateProfile(credential.user, { displayName: name.trim() });
+        } catch (createError) {
+          const code = (createError as { code?: string }).code ?? "";
+          if (code === "auth/email-already-in-use") {
+            await signInWithEmailAndPassword(auth, email, password);
+          } else {
+            throw createError;
+          }
+        }
       }
       await exchange();
       finish();
@@ -156,6 +172,10 @@ export default function LoginPage() {
   }
 
   async function google() {
+    if (!termsAccepted) {
+      toast.error("Please accept the Terms & Conditions to continue.");
+      return;
+    }
     const auth = getFirebaseAuth();
     if (!auth) {
       toast.error("Firebase isn't configured. Add the Firebase keys to ecommerce-client/.env.local.");
@@ -183,7 +203,7 @@ export default function LoginPage() {
     <main className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
           <Link href="/" className="mb-8 inline-flex items-center gap-1.5 text-[15px] font-black tracking-tight text-[#1c2734] md:hidden">
-            VANTA<span className="text-[#16815d]">/</span>
+            SHOPPING IN INDIA.in
           </Link>
 
           <div className="rounded-3xl bg-white p-6 shadow-[0_1px_4px_rgba(0,0,0,.12)] sm:p-8">
@@ -234,7 +254,7 @@ export default function LoginPage() {
                   <header>
                     <h1 className="text-xl font-black">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
                     <p className="mt-1.5 text-[13px] leading-6 text-slate-500">
-                      {mode === "signin" ? "Sign in to see your orders, saved items and more." : "Join Vanta for faster checkout and saved favourites."}
+                      {mode === "signin" ? "Sign in to see your orders, saved items and more." : "Join Shopping in India.in for faster checkout and saved favourites."}
                     </p>
                   </header>
 
@@ -258,7 +278,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={google}
-                    disabled={submitting}
+                    disabled={submitting || !termsAccepted}
                     className="mt-5 flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-slate-200 px-5 text-[13px] font-semibold transition hover:bg-slate-50 disabled:opacity-50"
                   >
                     <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden="true">
@@ -334,9 +354,26 @@ export default function LoginPage() {
                         </button>
                       </div>
                     </label>
+                    {/* Terms & Conditions Checkbox */}
+                    <label className="flex items-start gap-2.5 rounded-xl bg-[#faf9f5] px-4 py-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-[#16815d] focus:ring-[#16815d]/30"
+                      />
+                      <span className="text-[12px] leading-5 text-slate-500">
+                        I agree to the{" "}
+                        <Link href="/terms" target="_blank" className="font-semibold text-[#16815d] hover:underline">
+                          Terms &amp; Conditions
+                        </Link>{" "}
+                        and consent to the collection and use of my personal data as described therein.
+                      </span>
+                    </label>
+
                     <button
                       type="submit"
-                      disabled={submitting}
+                      disabled={submitting || !termsAccepted}
                       className="h-11 w-full rounded-full bg-[#16815d] px-5 text-[13px] font-semibold text-white transition hover:bg-[#147a56] active:scale-[.99] disabled:opacity-50"
                     >
                       {submitting ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}

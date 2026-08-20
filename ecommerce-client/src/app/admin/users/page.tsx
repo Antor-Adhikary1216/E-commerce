@@ -7,9 +7,11 @@ import {
   ChevronDown,
   Shield,
   User,
+  Trash2,
 } from "lucide-react";
 import { apiClient } from "@/services/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import Swal from "sweetalert2";
 
 interface UserItem {
   _id: string;
@@ -50,6 +52,32 @@ export default function AdminUsersPage() {
       );
     } catch {
       // ignore
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleDeleteUser(userId: string, userName: string) {
+    const result = await Swal.fire({
+      title: "Delete User?",
+      html: `This will permanently remove <strong>${userName}</strong> from the database and Firebase. They will need to create a new account to rejoin.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete permanently",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setUpdatingId(userId);
+    try {
+      await apiClient.delete(`/admin/users/${userId}`);
+      setUsers((prev) => prev.filter((u) => u._id !== userId));
+      Swal.fire("Deleted", "User has been permanently removed.", "success");
+    } catch {
+      Swal.fire("Error", "Failed to delete user. Please try again.", "error");
     } finally {
       setUpdatingId(null);
     }
@@ -118,6 +146,7 @@ export default function AdminUsersPage() {
               <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Email</th>
               <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Role</th>
               <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Joined</th>
+              <th className="px-4 py-3 text-left text-[12px] font-medium text-[#8c8c8c]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -151,11 +180,23 @@ export default function AdminUsersPage() {
                 <td className="px-4 py-3 text-[12px] text-[#8c8c8c]">
                   {new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                 </td>
+                <td className="px-4 py-3">
+                  {user.role !== "admin" && (
+                    <button
+                      onClick={() => handleDeleteUser(user._id, user.name)}
+                      disabled={updatingId === user._id}
+                      className="flex h-8 items-center gap-1.5 rounded-lg bg-[#fff1f0] px-3 text-[12px] font-medium text-[#dc3545] transition hover:bg-[#ffe0de] disabled:opacity-50"
+                    >
+                      <Trash2 size={13} />
+                      Delete
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-[13px] text-[#8c8c8c]">
+                <td colSpan={5} className="px-4 py-8 text-center text-[13px] text-[#8c8c8c]">
                   No users found
                 </td>
               </tr>

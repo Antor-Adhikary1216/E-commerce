@@ -23,8 +23,8 @@ export async function sendVerificationCode(email: string): Promise<"sent" | "rat
   );
   await sendEmail({
     to: normalized,
-    subject: "Your Vanta verification code",
-    html: `<p>Your Vanta verification code is:</p><h2>${code}</h2><p>It expires in 10 minutes.</p>`,
+    subject: "Your Shopping in India.in verification code",
+    html: `<p>Your Shopping in India.in verification code is:</p><h2>${code}</h2><p>It expires in 10 minutes.</p>`,
   });
   return "sent";
 }

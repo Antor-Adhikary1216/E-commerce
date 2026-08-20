@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Package, ChevronRight, Trash2 } from "lucide-react";
+import { Package, ChevronRight, Trash2, XCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { apiClient } from "@/services/api-client";
 import { currency } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -41,6 +42,8 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     apiClient
@@ -60,6 +63,20 @@ export default function OrdersPage() {
       // ignore
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleCancel(orderId: string) {
+    setCancelling(true);
+    try {
+      await apiClient.put(`/orders/${orderId}/cancel`);
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: "cancelled" } : o)));
+      setCancelConfirm(null);
+      toast.success("Order cancelled successfully");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Could not cancel order");
+    } finally {
+      setCancelling(false);
     }
   }
 
@@ -125,6 +142,20 @@ export default function OrdersPage() {
               <ChevronRight size={16} className="shrink-0 text-[#8c8c8c]" />
             </Link>
             
+            {/* Cancel Button */}
+            {["pending", "confirmed"].includes(order.status) && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCancelConfirm(order._id);
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#8c8c8c] transition-colors duration-150 hover:bg-[#fff7e6] hover:text-[#d48806]"
+                aria-label="Cancel order"
+              >
+                <XCircle size={16} />
+              </button>
+            )}
+
             {/* Delete Button */}
             <button
               onClick={(e) => {
@@ -161,6 +192,35 @@ export default function OrdersPage() {
                 className="rounded-lg bg-[#ff3b30] px-4 py-2 text-[14px] font-medium text-white transition-colors duration-225 hover:bg-[#ff453a] disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {cancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+            <h3 className="text-[16px] font-semibold text-[#262626]">Cancel Order</h3>
+            <p className="mt-2 text-[14px] text-[#8c8c8c]">
+              Are you sure you want to cancel this order?
+              {orders.find((o) => o._id === cancelConfirm)?.paymentMethod === "stripe" &&
+                " Since you paid online, a refund will be initiated to your original payment method."}
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setCancelConfirm(null)}
+                className="rounded-lg border border-[#f0f0f0] bg-[#fafafb] px-4 py-2 text-[14px] font-medium text-[#262626] transition-colors duration-225 hover:bg-[#f5f5f5]"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={() => handleCancel(cancelConfirm)}
+                disabled={cancelling}
+                className="rounded-lg bg-[#d48806] px-4 py-2 text-[14px] font-medium text-white transition-colors duration-225 hover:bg-[#d46b08] disabled:opacity-50"
+              >
+                {cancelling ? "Cancelling..." : "Cancel Order"}
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-const STORAGE_KEY = "vanta.access-token";
+const STORAGE_KEY = "shopping-in-india.access-token";
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const STORAGE_KEY = "vanta.search-history";
+const STORAGE_KEY = "shopping-in-india.search-history";
 const MAX_ITEMS = 10;
 
 function readHistory(): string[] {

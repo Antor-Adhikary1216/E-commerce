@@ -96,24 +96,24 @@ const catalog: CatalogItem[] = [
   { name: "Tetley Green Tea 100 Bags", category: "Grocery", price: 399, brand: "Tetley" },
   { name: "Haldiram's Almonds 500g", category: "Grocery", price: 799, brand: "Haldiram's" },
   // T-Shirts
-  { name: "Premium Cotton T-Shirt", category: "T-Shirts", price: 1999, brand: "Vanta" },
-  { name: "Everyday Crew Tee", category: "T-Shirts", price: 1499, brand: "Vanta" },
+  { name: "Premium Cotton T-Shirt", category: "T-Shirts", price: 1999, brand: "Shopping in India.in" },
+  { name: "Everyday Crew Tee", category: "T-Shirts", price: 1499, brand: "Shopping in India.in" },
   { name: "Graphic Tee", category: "T-Shirts", price: 1699, brand: "Roadster" },
   { name: "Polo Tee", category: "T-Shirts", price: 2199, brand: "US Polo Assn" },
   // Hoodies
-  { name: "Oversized Hoodie", category: "Hoodies", price: 3999, brand: "Vanta" },
+  { name: "Oversized Hoodie", category: "Hoodies", price: 3999, brand: "Shopping in India.in" },
   { name: "Zip Hoodie", category: "Hoodies", price: 4599, brand: "HRX" },
-  { name: "Essentials Hoodie", category: "Hoodies", price: 3499, brand: "Vanta" },
+  { name: "Essentials Hoodie", category: "Hoodies", price: 3499, brand: "Shopping in India.in" },
   // Jackets
-  { name: "Denim Jacket", category: "Jackets", price: 5999, brand: "Vanta" },
+  { name: "Denim Jacket", category: "Jackets", price: 5999, brand: "Shopping in India.in" },
   { name: "Bomber Jacket", category: "Jackets", price: 4999, brand: "HRX" },
-  { name: "Puffer Jacket", category: "Jackets", price: 7999, brand: "Vanta" },
+  { name: "Puffer Jacket", category: "Jackets", price: 7999, brand: "Shopping in India.in" },
   // Shirts
-  { name: "Linen Shirt", category: "Shirts", price: 3299, brand: "Vanta" },
+  { name: "Linen Shirt", category: "Shirts", price: 3299, brand: "Shopping in India.in" },
   { name: "Oxford Shirt", category: "Shirts", price: 3499, brand: "Louis Philippe" },
   { name: "Casual Shirt", category: "Shirts", price: 2899, brand: "Peter England" },
   // Jeans
-  { name: "Slim Fit Jeans", category: "Jeans", price: 3499, brand: "Vanta" },
+  { name: "Slim Fit Jeans", category: "Jeans", price: 3499, brand: "Shopping in India.in" },
   { name: "Straight Fit Jeans", category: "Jeans", price: 3999, brand: "Levi's" },
   { name: "Skinny Jeans", category: "Jeans", price: 3299, brand: "H&M" },
   // Running Shoes

@@ -8,7 +8,7 @@ A full-stack e-commerce platform with a Next.js storefront and Express API, powe
 
 ## Project Overview
 
-Vanta Commerce is a modern, production-ready e-commerce solution built for the Indian market. It features a sleek dark-nav design with warm canvas tones and lime-green accents, delivering a premium shopping experience across all devices.
+Shopping in India.in is a modern, production-ready e-commerce solution built for the Indian market. It features a sleek dark-nav design with warm canvas tones and lime-green accents, delivering a premium shopping experience across all devices.
 
 ### Key Highlights
 
@@ -38,7 +38,7 @@ Vanta Commerce is a modern, production-ready e-commerce solution built for the I
 | Payments | Stripe Checkout Sessions + Webhooks |
 | State | React Context (localStorage cart/wishlist), TanStack Query |
 | Alerts | SweetAlert2, react-hot-toast |
-| Deployment | Vercel (Client + API) |
+| Deployment | Vercel (Client), Vercel (API) |
 
 ## Getting Started
 
@@ -128,7 +128,7 @@ npm run dev
 - Product management — list with pagination (12/page), search, create, edit, delete
 - Full product creation form with images, pricing, variants, and visibility flags
 - Order management with status updates
-- User management
+- User management with role changes and permanent deletion (removes from DB + Firebase)
 - Payment history
 - Live customer care chat
 
@@ -137,6 +137,7 @@ npm run dev
 - Email OTP verification
 - JWT access token with auto-refresh interceptor
 - Role-based routing (admin vs customer)
+- Mandatory Terms & Conditions acceptance required for sign-up and sign-in
 
 ### Support
 - Help center with FAQ accordion
@@ -167,6 +168,8 @@ npm run dev
 | DELETE | `/admin/products/:id` | Admin | Delete product |
 | GET | `/admin/orders` | Admin | List all orders |
 | GET | `/admin/users` | Admin | List all users |
+| PUT | `/admin/users/:id/role` | Admin | Update user role |
+| DELETE | `/admin/users/:id` | Admin | Permanently delete user (DB + Firebase) |
 | PUT | `/user/profile` | Yes | Update user profile |
 
 ## Project Structure

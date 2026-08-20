@@ -7,8 +7,39 @@ import { OrderModel } from "../models/order.model.js";
 import { ShippingDetailModel } from "../models/shipping-detail.model.js";
 import { UserModel } from "../models/user.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
+import { sendEmail } from "../config/email.js";
 
 const currency = "inr";
+
+async function sendPurchaseEmail(userId: string, order: { orderNumber: string; items: { name: string; price: number; quantity: number }[]; total: number; paymentMethod: string }) {
+  try {
+    const user = await UserModel.findById(userId).lean();
+    if (!user?.email) return;
+    const itemRows = order.items
+      .map((i) => `<tr><td style="padding:6px 12px;border-bottom:1px solid #f0f0f0">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center">${i.quantity}</td><td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right">₹${i.price.toFixed(2)}</td></tr>`)
+      .join("");
+    const payLabel = order.paymentMethod === "stripe" ? "Online Payment (Stripe)" : "Cash on Delivery";
+    await sendEmail({
+      to: user.email,
+      subject: `Order ${order.orderNumber} confirmed – thank you!`,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+          <h2 style="color:#16815d">Order Confirmed</h2>
+          <p>Hi ${user.name},</p>
+          <p>Thank you for your purchase! Your order <strong>${order.orderNumber}</strong> has been placed.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
+            <thead><tr style="background:#fafafb"><th style="padding:6px 12px;text-align:left">Item</th><th style="padding:6px 12px;text-align:center">Qty</th><th style="padding:6px 12px;text-align:right">Price</th></tr></thead>
+            <tbody>${itemRows}</tbody>
+          </table>
+          <p style="font-size:15px"><strong>Total: ₹${order.total.toFixed(2)}</strong></p>
+          <p style="color:#8c8c8c;font-size:13px">Payment: ${payLabel}</p>
+          <p style="color:#8c8c8c;font-size:13px;margin-top:24px">– Shopping in India.in</p>
+        </div>`,
+    });
+  } catch (err) {
+    console.error("[order-email] Failed to send purchase email:", err);
+  }
+}
 
 interface CheckoutLine {
   slug: string;
@@ -135,7 +166,7 @@ export async function createStripeCheckout(req: AuthRequest, res: Response): Pro
       await ShippingDetailModel.updateOne({ _id: shippingDetailId }, { $set: { order: order._id } });
     }
 
-    saveAddressToProfile(req.auth!.userId, shippingAddress).catch(() => {});
+    saveAddressToProfile(req.auth!.userId, shippingAddress).catch((err) => console.error("Failed to save address:", err));
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -156,6 +187,13 @@ export async function createStripeCheckout(req: AuthRequest, res: Response): Pro
 
     order.stripeSessionId = session.id;
     await order.save();
+
+    sendPurchaseEmail(req.auth!.userId, {
+      orderNumber: order.orderNumber ?? "",
+      items: orderItems,
+      total: order.total ?? 0,
+      paymentMethod: "stripe",
+    });
 
     return res.json({ url: session.url, orderNumber: order.orderNumber });
   } catch (err: any) {
@@ -192,6 +230,8 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
     const session = event.data.object as Stripe.Checkout.Session;
     const orderId = session.metadata?.orderId;
     if (orderId) await OrderModel.updateOne({ _id: orderId }, { paymentStatus: "failed" });
+  } else {
+    console.info(`Webhook: unhandled event type ${event.type}`);
   }
 
   return res.json({ received: true });
@@ -238,7 +278,14 @@ export async function createCODOrder(req: AuthRequest, res: Response): Promise<R
       await ShippingDetailModel.updateOne({ _id: shippingDetailId }, { $set: { order: order._id } });
     }
 
-    saveAddressToProfile(req.auth!.userId, shippingAddress).catch(() => {});
+    saveAddressToProfile(req.auth!.userId, shippingAddress).catch((err) => console.error("Failed to save address:", err));
+
+    sendPurchaseEmail(req.auth!.userId, {
+      orderNumber: order.orderNumber ?? "",
+      items: orderItems,
+      total: order.total ?? 0,
+      paymentMethod: "cod",
+    });
 
     return res.json({ 
       orderNumber: order.orderNumber, 

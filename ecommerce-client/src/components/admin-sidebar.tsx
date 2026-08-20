@@ -53,9 +53,9 @@ export function AdminSidebar() {
     } catch {
       // session already cleared client-side
     }
-    localStorage.removeItem("vanta.cart");
-    localStorage.removeItem("vanta.saved");
-    localStorage.removeItem("vanta.access-token");
+    localStorage.removeItem("shopping-in-india.cart");
+    localStorage.removeItem("shopping-in-india.saved");
+    localStorage.removeItem("shopping-in-india.access-token");
     window.location.href = "/";
   }
 

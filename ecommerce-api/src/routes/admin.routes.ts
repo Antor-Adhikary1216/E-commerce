@@ -11,6 +11,7 @@ import {
   updateOrderStatus,
   listUsers,
   updateUserRole,
+  deleteUser,
   listPayments,
   listConversations,
   getConversation,
@@ -40,6 +41,7 @@ router.put("/orders/:id/status", updateOrderStatus);
 // Users
 router.get("/users", listUsers);
 router.put("/users/:id/role", updateUserRole);
+router.delete("/users/:id", deleteUser);
 
 // Payments
 router.get("/payments", listPayments);

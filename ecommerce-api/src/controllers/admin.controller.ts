@@ -1,9 +1,12 @@
 import type { Response } from "express";
 import { Types } from "mongoose";
+import { getAuth } from "firebase-admin/auth";
 import { OrderModel } from "../models/order.model.js";
 import { UserModel } from "../models/user.model.js";
 import { ProductModel } from "../models/product.model.js";
 import { ConversationModel } from "../models/conversation.model.js";
+import { CartModel } from "../models/cart.model.js";
+import { ReviewModel } from "../models/review.model.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
 // ─── Dashboard Stats ────────────────────────────────────────────
@@ -172,6 +175,34 @@ export async function updateUserRole(req: AuthRequest, res: Response): Promise<R
   const user = await UserModel.findByIdAndUpdate(req.params.id, { role }, { new: true }).select("-refreshTokenHash");
   if (!user) return res.status(404).json({ message: "User not found" });
   return res.json({ user });
+}
+
+export async function deleteUser(req: AuthRequest, res: Response): Promise<Response> {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (user.role === "admin") {
+    return res.status(400).json({ message: "Cannot delete an admin user" });
+  }
+
+  const firebaseUid = user.firebaseUid;
+
+  await Promise.all([
+    CartModel.deleteMany({ user: user._id }),
+    ReviewModel.deleteMany({ user: user._id }),
+    ConversationModel.deleteMany({ user: user._id }),
+  ]);
+
+  await UserModel.findByIdAndDelete(user._id);
+
+  try {
+    const auth = getAuth();
+    await auth.deleteUser(firebaseUid);
+  } catch {
+    // Firebase user may not exist; continue
+  }
+
+  return res.json({ message: "User permanently deleted" });
 }
 
 // ─── Payment History ──────────────────────────────────────────────
